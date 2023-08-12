@@ -5,6 +5,7 @@
 
 #define FIELD_NUM 4
 #define MAX_CHILD_NUM 1024
+#define MIN_PRIORITY INT32_MIN
 
 enum {
     ACCEPT = 0,

@@ -27,15 +27,25 @@ void init_tree_node(struct trie_node* node, struct ip_rule* rule){
     node->next = 0;
     node->layer = 0;
     node->index = 0;
+    node->child_num = 0;
+    for (int i = 0;i < MAX_CHILD_NUM;i++){
+        node->childs[i] = nullptr;
+    }
 }
 
 void init_vtree_node(struct trie_node* node, unsigned int key, unsigned int mask){
+    node->key = (struct ip_key*)malloc(sizeof(struct ip_key));
     node->key->value = key & mask;
     node->key->mask = mask;
+    node->value = (struct ip_value*)malloc(sizeof(struct ip_value));
     node->value->action = -1;
     node->next = 0;
     node->layer = 0;
     node->index = 0;
+    node->child_num = 0;
+    for (int i = 0;i < MAX_CHILD_NUM;i++){
+        node->childs[i] = nullptr;
+    }
 }
 
 int store(int layer, struct trie_node* node, unsigned int mask){
@@ -43,6 +53,7 @@ int store(int layer, struct trie_node* node, unsigned int mask){
         uint32_t hash_key = (node->key->value & mask) ^ seed[layer-1], slot_index = 0;
         MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &slot_index);
         int index = (slot_index % MAX_SLOT_NUM) + 1;
+
         while (layer <= MAX_LAYER_NUM){
             struct slot* slot = &Sc[layer-1][index-1];
             if (slot->used==0 || (node->value->action == -1 && slot->key->value==node->key->value && slot->key->mask==mask)){
@@ -71,7 +82,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         fa->childs[fa->child_num++] = child;
     }
 
-    int i = 0, n = childs.size();
+    int i = 0, n = childs.size(), j = 0;
     if (fa->layer == -1){
         for (i = 0;i < n;i++) childs[i]->layer = -1;
         return 0;
@@ -87,8 +98,8 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         trie_node* father = cp[0];
         trie_node* children = cp[1];
         store(father->layer+1, children, father->next);
-        for (trie_node* cchild : children->childs){
-            child_pair.push_back({children, cchild});
+        for (j = 0;j < children->child_num;j++){
+            child_pair.push_back({children, children->childs[j]});
         }
         n = child_pair.size();
     }
@@ -98,7 +109,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
 int delete_node(struct trie_node *fa){
     if (fa->layer == -1) return 0;
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = 0;
-    int i = 0, n = fa->child_num;
+    int i = 0, n = fa->child_num, j = 0;
     std::vector<trie_node*> child_pair;
     for (i = 0;i < n;i++){
         child_pair.push_back(fa->childs[i]);
@@ -107,8 +118,8 @@ int delete_node(struct trie_node *fa){
         trie_node* children = child_pair[i];
         if (children->layer == -1) continue;
         Sc[children->layer-1][children->index-1].used = 0;
-        for (trie_node* cchild : children->childs){
-            child_pair.push_back(cchild);
+        for (j = 0;j < children->child_num;j++){
+            child_pair.push_back(children->childs[j]);
         }
         n = child_pair.size();
     }
@@ -118,7 +129,7 @@ int delete_node(struct trie_node *fa){
 int insert_tree(struct ip_rule* rule){
     struct trie_node* rn;
     rn = (struct trie_node *)malloc(sizeof(struct trie_node));
-    init_tree_node(rn, rule);
+    init_tree_node(rn, rule); 
 
     unsigned int key = rule->key.value, imask = rule->key.mask;
     struct trie_node* cn = root;
@@ -128,6 +139,9 @@ int insert_tree(struct ip_rule* rule){
     for (i = 0;i < n;i++){
         struct trie_node* cur = cn->childs[i];
         if (cur->value->action == -1 && cur->key->value == key && cmask == imask){
+            free(cur->key);
+            free(cur->value);
+            cur->key = &rule->key;
             cur->value = &rule->value;
             store(cn->layer+1, cur, cmask);
             break;
@@ -203,7 +217,7 @@ int value_match(const struct packet* pkt, struct ip_value* value){
 }
 
 struct ip_value* zero_rule_query(const struct packet* pkt){
-    int i = 0, res = -1, max_pri = -1;
+    int i = 0, res = -1, max_pri = MIN_PRIORITY;
     for (i = 0;i < zero_rule_num;i++){
         if (value_match(pkt, &Zc[i]->value)){
             if (Zc[i]->value.priority > max_pri){
@@ -217,7 +231,7 @@ struct ip_value* zero_rule_query(const struct packet* pkt){
 
 struct ip_value* oracle(const struct packet* pkt){
     ip_value* res = nullptr;
-    int max_pri = -1;
+    int max_pri = MIN_PRIORITY;
 
     trie_node* cur = root;
     unsigned int cmask = cur->next, src = pkt->src;
@@ -247,7 +261,7 @@ struct ip_value* oracle(const struct packet* pkt){
 
 int query(const struct packet* pkt){
     ip_value* res = zero_rule_query(pkt);
-    int max_pri = (res == nullptr ? -1 : res->priority);
+    int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
 
     unsigned int cmask = root->next, src = pkt->src;
     int oracle_flag = 0;
@@ -313,7 +327,6 @@ int init_MAT(){
     for (int i = 0;i < MAX_CHILD_NUM;i++){
         root->childs[i] = nullptr;
     }
-    printf("%d\n", sizeof(struct trie_node));
 
     int i = 0, j = 0;
     for (i = 0;i < MAX_ZERO_RULE_NUM;i++){
@@ -322,7 +335,8 @@ int init_MAT(){
 
     for (i = 0;i < MAX_LAYER_NUM;i++){
         for (j = 0;j < MAX_SLOT_NUM;j++){
-            Sc[i][j].used = Sc[i][j].next = 0;
+            Sc[i][j].used = 0;
+            Sc[i][j].next = 0;
             Sc[i][j].key = nullptr;
             Sc[i][j].value = nullptr;
         }
