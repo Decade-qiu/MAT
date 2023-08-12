@@ -30,6 +30,7 @@ void query_packets(char* file){
         tuple2packet(tuple, &packet_set[packet_num++]);
     }
 
+    printf("Start query packets.\n");
     int i = 0, error_match = 0;
     for (i = 0; i < packet_num; i++){
         int rule_id = query(&packet_set[i]);
@@ -38,7 +39,7 @@ void query_packets(char* file){
             printf("Packet %d error match, rule id %d should be %d.\n", i, rule_id, packet_set[i].id);
         }
     }
-    printf("Query %d packets, %d error match.\n", packet_num, error_match);
+    printf("Query %d packets, %d error match!\n", packet_num, error_match);
 }
 
 void insert_rule(char* file){
@@ -62,9 +63,8 @@ void insert_rule(char* file){
     for (i = 0; i < rule_num; i++){
         int st = insert(&rule_set[i]);
         if (st == 0) sucess_count++; 
-        break;
     }
-    printf("Insert %d rules, %d sucess.\n", rule_num, sucess_count);
+    printf("Insert %d rules, %d sucess!\n", rule_num, sucess_count);
 }
 
 int main(int argc, char* argv[]){
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]){
     
     insert_rule(x);
 
-    // query_packets(y);
+    query_packets(y);
 }
 
 std::vector<std::string> split(const std::string& str, const std::string& pattern) {
