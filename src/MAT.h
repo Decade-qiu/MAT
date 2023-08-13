@@ -45,7 +45,7 @@ struct ip_rule{
 struct slot{
     struct ip_key* key;
     struct ip_value* value;
-    int next;
+    unsigned int next;
     int used;
 };
 
@@ -79,10 +79,9 @@ struct packet{
 
 int insert(struct ip_rule* rule);
 
-// int update(struct ip_rule rule, struct slot liod);
-
 int query(const struct packet* pkt);
 
+void print_trie();
 
 int init_MAT();
 

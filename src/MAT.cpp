@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unordered_set>
+#include <unordered_map>
+#include <queue>
+#include <fstream> 
+#include <iostream>
 #include <cstdlib> 
+#include <cstring> 
 #include <ctime>  
 
 #include "MAT.h"
@@ -9,8 +14,8 @@
 
 #define SEED 13
 #define MAX_ZERO_RULE_NUM 1024
-#define MAX_LAYER_NUM 1024
-#define MAX_SLOT_NUM 1024
+#define MAX_LAYER_NUM 128
+#define MAX_SLOT_NUM 8012
 
 unsigned int seed[MAX_LAYER_NUM];
 
@@ -39,6 +44,7 @@ void init_vtree_node(struct trie_node* node, unsigned int key, unsigned int mask
     node->key->mask = mask;
     node->value = (struct ip_value*)malloc(sizeof(struct ip_value));
     node->value->action = -1;
+    node->value->id = node->value->priority = 0;
     node->next = 0;
     node->layer = 0;
     node->index = 0;
@@ -56,7 +62,11 @@ int store(int layer, struct trie_node* node, unsigned int mask){
 
         while (layer <= MAX_LAYER_NUM){
             struct slot* slot = &Sc[layer-1][index-1];
-            if (slot->used==0 || (node->value->action == -1 && slot->key->value==node->key->value && slot->key->mask==mask)){
+            if (slot->used==0 || (slot->value->action == -1 && slot->key->value==node->key->value && slot->key->mask==mask)){
+                if (slot->used != 0){
+                    free(slot->key);
+                    free(slot->value);
+                }
                 slot->key = node->key;
                 slot->value = node->value;
                 slot->next = node->next;
@@ -85,6 +95,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
     int i = 0, n = childs.size(), j = 0;
     if (fa->layer == -1){
         for (i = 0;i < n;i++) childs[i]->layer = -1;
+        printf("Error: father node is not in the tree.\n");
         return 0;
     }
 
@@ -110,6 +121,7 @@ int delete_node(struct trie_node *fa){
     if (fa->layer == -1) return 0;
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = 0;
     int i = 0, n = fa->child_num, j = 0;
+    fa->child_num = 0;
     std::vector<trie_node*> child_pair;
     for (i = 0;i < n;i++){
         child_pair.push_back(fa->childs[i]);
@@ -135,16 +147,16 @@ int insert_tree(struct ip_rule* rule){
     struct trie_node* cn = root;
     unsigned int cmask = cn->next;
 
-    int i = 0, n = cn->child_num;
+    int i = 0, n = cn->child_num, vn_eq_rn = 0;
     for (i = 0;i < n;i++){
         struct trie_node* cur = cn->childs[i];
         if (cur->value->action == -1 && cur->key->value == key && cmask == imask){
-            free(cur->key);
-            free(cur->value);
-            cur->key = &rule->key;
-            cur->value = &rule->value;
-            store(cn->layer+1, cur, cmask);
-            break;
+            int layer = cur->layer, index = cur->index;
+            struct slot* slot = &Sc[layer-1][index-1];
+            cur->key = slot->key = &rule->key;
+            cur->value = slot->value = &rule->value;
+            return 0;
+            // break;
         }
         if (imask >= cmask && (key & cmask) == cur->key->value){
             cn = cur;
@@ -165,22 +177,31 @@ int insert_tree(struct ip_rule* rule){
         insert_childs[0] = rn;
         write_node(vn, insert_childs, imask);
     }else{
-        struct trie_node* vn;
-        vn = (struct trie_node *)malloc(sizeof(struct trie_node));
-        init_vtree_node(vn, cn->childs[0]->key->value, imask);
+        std::unordered_map<unsigned int, std::vector<struct trie_node*>> v_child;
+        for (i = 0;i < cn->child_num;i++){
+            unsigned int next_v_key = cn->childs[i]->key->value & imask;
+            v_child[next_v_key].push_back(cn->childs[i]);
+        }
         delete_node(cn);
-        std::vector<struct trie_node*> cchild;
-        for (i = 0;i < cn->child_num;i++) cchild.push_back(cn->childs[i]);
-        cn->child_num = 0;
-        if (vn->key->value == key){
-            insert_childs.push_back(rn);
-            write_node(cn, insert_childs, imask);
-            write_node(rn, cchild, cmask);
-        }else{
+        for (std::pair<unsigned int, std::vector<trie_node *>> pair: v_child){
+            unsigned int v_key = pair.first;
+            std::vector<struct trie_node*> v_childs = pair.second;
+            struct trie_node* vn;
+            if (v_key == key){
+                vn = rn;
+                vn_eq_rn = 1;
+            }else{
+                vn = (struct trie_node *)malloc(sizeof(struct trie_node));
+                init_vtree_node(vn, v_key, imask);
+            }
+            insert_childs.clear();
             insert_childs.push_back(vn);
             write_node(cn, insert_childs, imask);
-            write_node(vn, cchild, cmask);
-            insert_childs[0] = rn;
+            write_node(vn, v_childs, cmask);
+        }
+        if (vn_eq_rn == 0){
+            insert_childs.clear();
+            insert_childs.push_back(rn);
             write_node(cn, insert_childs, imask);
         }
     }
@@ -198,8 +219,8 @@ int insert(struct ip_rule* rule){
 
 int match(unsigned int t, ip_field* f){
     if (f->type == MASK){
-        if ((t & f->mask) == f->value) return 1;
-        return 0;
+        if ((t & f->mask) == f->value) return 1 ^ f->inv;
+        return 0 ^ f->inv;
     }
     int flag_in = 0;
     if (t >= f->value && t <= f->mask) flag_in = 1;
@@ -239,7 +260,7 @@ struct ip_value* oracle(const struct packet* pkt){
     while (i < n){
         trie_node* child = cur->childs[i];
         if (child->key->value == (src & cmask)){
-            if (value_match(pkt, child->value)){
+            if (child->value->action != -1 && value_match(pkt, child->value)){
                 if (child->value->priority > max_pri){
                     res = child->value;
                     max_pri = child->value->priority;
@@ -270,9 +291,12 @@ int query(const struct packet* pkt){
     int layer = 1, index = (slot_index % MAX_SLOT_NUM) + 1;
     while (layer <= MAX_LAYER_NUM){
         struct slot* cur = &Sc[layer-1][index-1];
-        if (cur->used == 0) break;
+        if (cur->used == 0) {
+            layer++;
+            continue;
+        }
         if (cur->key->value == (src & cmask)){
-            if (value_match(pkt, cur->value)){
+            if (cur->value->action >= 0 && value_match(pkt, cur->value)){
                 if (cur->value->priority > max_pri){
                     max_pri = cur->value->priority;
                     res = cur->value;
@@ -296,26 +320,36 @@ int query(const struct packet* pkt){
             if (layer > MAX_LAYER_NUM) oracle_flag = 1;
         }
     }
-    
+
     if (oracle_flag == 1){
         ip_value* oracle_res = oracle(pkt);
-        if (oracle_res->priority > max_pri) res = oracle_res;
+        if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
     }
 
     return res == nullptr ? 0 : res->id;
 }
 
+void gen_seed(){
+    std::ifstream fin;
+    fin.open("../data/seed", std::ios::in);
+    for (int i = 0;i < MAX_LAYER_NUM;i++) fin >> seed[i];
+    // srand((int)time(0));
+    // std::unordered_set<int> seed_set;
+    // int index = 0;
+    // while (index != MAX_LAYER_NUM) {
+    //     int cur = rand();
+    //     if (seed_set.count(cur) == 0) {
+    //         seed_set.insert(cur);
+    //         seed[index++] = cur;
+    //     }
+    // }
+    // std::ofstream fout;
+    // fout.open("../data/seed");
+    // for (int i = 0;i < MAX_LAYER_NUM;i++) fout << seed[i] << "\n";
+}
+
 int init_MAT(){
-    srand((int)time(0));
-    std::unordered_set<int> seed_set;
-    int index = 0;
-    while (index != MAX_LAYER_NUM) {
-        int cur = rand();
-        if (seed_set.count(cur) == 0) {
-            seed_set.insert(cur);
-            seed[index++] = cur;
-        }
-    }
+    gen_seed();
 
     root = (struct trie_node *)malloc(sizeof(struct trie_node));
     root->key = nullptr;
@@ -343,4 +377,41 @@ int init_MAT(){
     }
     printf("Init MAT sucess！\n");
     return 0;
+}
+
+int countOnes(unsigned int n) {
+    int count = 0;
+    while (n != 0) {
+        n = n & (n - 1);
+        count++;
+    }
+    return count;
+}
+
+void display(trie_node* root){
+    if (root == nullptr) return;
+    std::ofstream fout;
+    fout.open("../data/trie");
+    // BFS
+    std::queue<struct trie_node*> q;
+    q.push(root);
+    while (!q.empty()){
+        int s = q.size();
+        fout << s << '\n';
+        while (s--){
+            trie_node* cur = q.front();
+            q.pop();
+            if(cur->key != nullptr) {
+                fout << std::hex << cur->key->value << "/" << std::dec << countOnes(cur->key->mask) << (cur->value->action==-1 ? "V " : " ") << cur->value->id << ' ' << cur->layer << "@" << cur->index << "\n";
+            }
+            for (int i = 0;i < cur->child_num;i++){
+                q.push(cur->childs[i]);
+            }
+        }
+        fout << '\n';
+    }
+}
+
+void print_trie(){
+    display(root);
 }
