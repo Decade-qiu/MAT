@@ -26,7 +26,7 @@ void query_packets(char* file){
     std::string line = "1";
     while (std::getline(inputFile, line)){
         std::vector<std::string> tuple = split(line, "\\s+");
-        if (tuple.size() < 7) continue;
+        if (line == "\n" || line == "\t\n" || tuple.size() < 7) break;
         tuple2packet(tuple, &packet_set[packet_num++]);
     }
 
@@ -36,7 +36,7 @@ void query_packets(char* file){
         int rule_id = query(&packet_set[i]);
         if (rule_id != packet_set[i].id){
             error_match++;
-            printf("Packet %d error match, rule id %d should be %d.\n", i, rule_id, packet_set[i].id);
+            printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
         }
     }
     printf("Query %d packets, %d error match!\n", packet_num, error_match);
@@ -52,8 +52,7 @@ void insert_rule(char* file){
     std::string line = "1";
     while (std::getline(inputFile, line)){
         std::vector<std::string> tuple = split(line, "\\s+");
-        if (tuple.size() < 9) continue;
-        // printf("%s\n", line.c_str());
+        if (line == "\n" || line == "\t\n" || tuple.size() < 9) break;
         tuple2rule(tuple, &rule_set[rule_num++]);
     }
     inputFile.close();
@@ -80,6 +79,8 @@ int main(int argc, char* argv[]){
     insert_rule(x);
 
     query_packets(y);
+
+    print_trie();
 }
 
 std::vector<std::string> split(const std::string& str, const std::string& pattern) {
@@ -105,27 +106,31 @@ void tuple2rule(std::vector<std::string> tuple, struct ip_rule* rule){
     rule->value.field[0].value = (unsigned int)std::stoll(dst_mask[0]);
     rule->value.field[0].mask = (unsigned int)std::stoll(dst_mask[1]);
     rule->value.field[0].type = MASK;
+    rule->value.field[0].inv = 0;
     // protcol
     rule->value.field[1].value = (unsigned int)std::stoll(tuple[2]);
     rule->value.field[1].mask = 0xff;
     rule->value.field[1].type = MASK;
     if (std::stoi(tuple[5]) == 1) rule->value.field[1].inv = 1;
+    else rule->value.field[1].inv = 0;
     // sport
     std::vector<std::string> sport_mask = split(tuple[3], ":");
     rule->value.field[2].value = (unsigned int)std::stoll(sport_mask[0]);
     rule->value.field[2].mask = (unsigned int)std::stoll(sport_mask[1]);
     rule->value.field[2].type = RANGE;
     if (std::stoi(tuple[6]) == 1) rule->value.field[2].inv = 1;
+    else rule->value.field[2].inv = 0;
     // dport
     std::vector<std::string> dport_mask = split(tuple[4], ":");
     rule->value.field[3].value = (unsigned int)std::stoll(dport_mask[0]);
     rule->value.field[3].mask = (unsigned int)std::stoll(dport_mask[1]);
     rule->value.field[3].type = RANGE;
     if (std::stoi(tuple[7]) == 1) rule->value.field[3].inv = 1;
+    else rule->value.field[3].inv = 0;
     // priority (1 > 2 > 3 > ...)
     rule->value.priority = -std::stoi(tuple[8]);
     // id
-    rule->value.id = rule_num;
+    rule->value.id = -rule->value.priority;
     // action
     rule->value.action = ACCEPT;
 }
