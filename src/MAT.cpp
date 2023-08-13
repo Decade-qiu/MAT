@@ -14,8 +14,8 @@
 
 #define SEED 13
 #define MAX_ZERO_RULE_NUM 1024
-#define MAX_LAYER_NUM 128
-#define MAX_SLOT_NUM 8012
+#define MAX_LAYER_NUM 512
+#define MAX_SLOT_NUM 1024
 
 unsigned int seed[MAX_LAYER_NUM];
 
@@ -95,7 +95,6 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
     int i = 0, n = childs.size(), j = 0;
     if (fa->layer == -1){
         for (i = 0;i < n;i++) childs[i]->layer = -1;
-        printf("Error: father node is not in the tree.\n");
         return 0;
     }
 
@@ -330,22 +329,22 @@ int query(const struct packet* pkt){
 }
 
 void gen_seed(){
-    std::ifstream fin;
-    fin.open("../data/seed", std::ios::in);
-    for (int i = 0;i < MAX_LAYER_NUM;i++) fin >> seed[i];
-    // srand((int)time(0));
-    // std::unordered_set<int> seed_set;
-    // int index = 0;
-    // while (index != MAX_LAYER_NUM) {
-    //     int cur = rand();
-    //     if (seed_set.count(cur) == 0) {
-    //         seed_set.insert(cur);
-    //         seed[index++] = cur;
-    //     }
-    // }
-    // std::ofstream fout;
-    // fout.open("../data/seed");
-    // for (int i = 0;i < MAX_LAYER_NUM;i++) fout << seed[i] << "\n";
+    // std::ifstream fin;
+    // fin.open("../data/seed", std::ios::in);
+    // for (int i = 0;i < MAX_LAYER_NUM;i++) fin >> seed[i];
+    srand((int)time(0));
+    std::unordered_set<int> seed_set;
+    int index = 0;
+    while (index != MAX_LAYER_NUM) {
+        int cur = rand();
+        if (seed_set.count(cur) == 0) {
+            seed_set.insert(cur);
+            seed[index++] = cur;
+        }
+    }
+    std::ofstream fout;
+    fout.open("../data/seed");
+    for (int i = 0;i < MAX_LAYER_NUM;i++) fout << seed[i] << "\n";
 }
 
 int init_MAT(){
@@ -393,10 +392,14 @@ void display(trie_node* root){
     std::ofstream fout;
     fout.open("../data/trie");
     // BFS
+    int max_depth = 0, max_width = 0, total_num = 0;
     std::queue<struct trie_node*> q;
     q.push(root);
     while (!q.empty()){
         int s = q.size();
+        max_depth++;
+        max_width = std::max(max_width, s);
+        total_num += s;
         fout << s << '\n';
         while (s--){
             trie_node* cur = q.front();
@@ -410,6 +413,8 @@ void display(trie_node* root){
         }
         fout << '\n';
     }
+    fout.close();
+    printf("Rule Trie: total_node_num %d, max_depth %d, max_width %d\n", total_num, max_depth, max_width);
 }
 
 void print_trie(){
