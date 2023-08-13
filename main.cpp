@@ -78,9 +78,9 @@ int main(int argc, char* argv[]){
     
     insert_rule(x);
 
-    query_packets(y);
-
     print_trie();
+
+    query_packets(y);
 }
 
 std::vector<std::string> split(const std::string& str, const std::string& pattern) {
@@ -111,6 +111,7 @@ void tuple2rule(std::vector<std::string> tuple, struct ip_rule* rule){
     rule->value.field[1].value = (unsigned int)std::stoll(tuple[2]);
     rule->value.field[1].mask = 0xff;
     rule->value.field[1].type = MASK;
+    if (rule->value.field[1].value == 0) rule->value.field[1].mask = 0;
     if (std::stoi(tuple[5]) == 1) rule->value.field[1].inv = 1;
     else rule->value.field[1].inv = 0;
     // sport
