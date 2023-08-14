@@ -4,7 +4,7 @@
 #include <vector>
 
 #define FIELD_NUM 4
-#define MAX_CHILD_NUM 1024
+#define MAX_CHILD_NUM 512
 #define MIN_PRIORITY INT32_MIN
 
 enum {
@@ -78,6 +78,8 @@ struct packet{
 // };
 
 int insert(struct ip_rule* rule);
+
+int oracle(const struct packet* pkt);
 
 int query(const struct packet* pkt);
 

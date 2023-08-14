@@ -12,12 +12,15 @@
 #include "MAT.h"
 #include "../utils/murmurhash.h"
 
-#define SEED 13
-#define MAX_ZERO_RULE_NUM 1024
-#define MAX_LAYER_NUM 512
-#define MAX_SLOT_NUM 1024
+#define SEED 1331
+#define MAX_ZERO_RULE_NUM 4096
+#define MAX_LAYER_NUM 256
+#define MAX_SLOT_NUM 512
+#define MAX_BUCKET_NUM 512
 
 unsigned int seed[MAX_LAYER_NUM];
+
+
 
 struct ip_rule* Zc[MAX_ZERO_RULE_NUM];
 int zero_rule_num = 0;
@@ -55,11 +58,10 @@ void init_vtree_node(struct trie_node* node, unsigned int key, unsigned int mask
 }
 
 int store(int layer, struct trie_node* node, unsigned int mask){
-    if (layer <= MAX_LAYER_NUM){
+    if (layer <= MAX_LAYER_NUM && layer >= 1){
         uint32_t hash_key = (node->key->value & mask) ^ seed[layer-1], slot_index = 0;
         MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &slot_index);
         int index = (slot_index % MAX_SLOT_NUM) + 1;
-
         while (layer <= MAX_LAYER_NUM){
             struct slot* slot = &Sc[layer-1][index-1];
             if (slot->used==0 || (slot->value->action == -1 && slot->key->value==node->key->value && slot->key->mask==mask)){
@@ -92,13 +94,8 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         fa->childs[fa->child_num++] = child;
     }
 
-    int i = 0, n = childs.size(), j = 0;
-    if (fa->layer == -1){
-        for (i = 0;i < n;i++) childs[i]->layer = -1;
-        return 0;
-    }
-
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = mask;
+    int i = 0, n = childs.size(), j = 0;
     std::vector<std::vector<trie_node*>> child_pair;
     for (i = 0;i < n;i++){
         child_pair.push_back({fa, childs[i]});
@@ -150,12 +147,14 @@ int insert_tree(struct ip_rule* rule){
     for (i = 0;i < n;i++){
         struct trie_node* cur = cn->childs[i];
         if (cur->value->action == -1 && cur->key->value == key && cmask == imask){
+            cur->key = &rule->key;
+            cur->value = &rule->value;
             int layer = cur->layer, index = cur->index;
+            if (layer == -1) return 0;
             struct slot* slot = &Sc[layer-1][index-1];
-            cur->key = slot->key = &rule->key;
-            cur->value = slot->value = &rule->value;
+            slot->key = &rule->key;
+            slot->value = &rule->value;
             return 0;
-            // break;
         }
         if (imask >= cmask && (key & cmask) == cur->key->value){
             cn = cur;
@@ -249,7 +248,7 @@ struct ip_value* zero_rule_query(const struct packet* pkt){
     return res == -1 ? nullptr : &Zc[res]->value;
 }
 
-struct ip_value* oracle(const struct packet* pkt){
+struct ip_value* _oracle(const struct packet* pkt){
     ip_value* res = nullptr;
     int max_pri = MIN_PRIORITY;
 
@@ -292,6 +291,7 @@ int query(const struct packet* pkt){
         struct slot* cur = &Sc[layer-1][index-1];
         if (cur->used == 0) {
             layer++;
+            if (layer > MAX_LAYER_NUM) oracle_flag = 1;
             continue;
         }
         if (cur->key->value == (src & cmask)){
@@ -321,10 +321,18 @@ int query(const struct packet* pkt){
     }
 
     if (oracle_flag == 1){
-        ip_value* oracle_res = oracle(pkt);
+        ip_value* oracle_res = _oracle(pkt);
         if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
     }
 
+    return res == nullptr ? 0 : res->id;
+}
+
+int oracle(const struct packet* pkt){
+    ip_value* res = zero_rule_query(pkt);
+    int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
+    ip_value* oracle_res = _oracle(pkt);
+    if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
     return res == nullptr ? 0 : res->id;
 }
 
@@ -347,9 +355,7 @@ void gen_seed(){
     for (int i = 0;i < MAX_LAYER_NUM;i++) fout << seed[i] << "\n";
 }
 
-int init_MAT(){
-    gen_seed();
-
+void init_root(){
     root = (struct trie_node *)malloc(sizeof(struct trie_node));
     root->key = nullptr;
     root->value = nullptr;
@@ -360,12 +366,13 @@ int init_MAT(){
     for (int i = 0;i < MAX_CHILD_NUM;i++){
         root->childs[i] = nullptr;
     }
+}
 
+void init_data_struct(){
     int i = 0, j = 0;
     for (i = 0;i < MAX_ZERO_RULE_NUM;i++){
         Zc[i] = nullptr;
     }
-
     for (i = 0;i < MAX_LAYER_NUM;i++){
         for (j = 0;j < MAX_SLOT_NUM;j++){
             Sc[i][j].used = 0;
@@ -374,6 +381,15 @@ int init_MAT(){
             Sc[i][j].value = nullptr;
         }
     }
+}
+
+int init_MAT(){
+    gen_seed();
+
+    init_root();
+
+    init_data_struct();
+    
     printf("Init MAT sucess！\n");
     return 0;
 }
