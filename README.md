@@ -1,5 +1,5 @@
 # MAT
-MAT match-action
+MAT match-action run
 ```
 cd build
 cmake ..
