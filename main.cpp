@@ -2,15 +2,10 @@
 #include <fstream> 
 #include <iostream>
 #include <regex>
+#include <random>
 
-#define MAX_RULE 12000
+#define MAX_RULE 30000
 #define MAX_PACKET 100000
-
-std::vector<std::string> split(const std::string& str, const std::string& pattern);
-
-void tuple2rule(std::vector<std::string> tuple, ip_rule* rule);
-
-void tuple2packet(std::vector<std::string> tuple, packet* pkt);
 
 struct ip_rule rule_set[MAX_RULE];
 int rule_num = 0;
@@ -18,52 +13,65 @@ int rule_num = 0;
 struct packet packet_set[MAX_PACKET];
 int packet_num = 0;
 
-void query_packets(char* file){
-    std::ifstream inputFile(file); 
-    if (!inputFile.is_open()) {
-        printf("Error opening file %s.\n", file);
-    }
-    std::string line = "1";
-    while (std::getline(inputFile, line)){
-        std::vector<std::string> tuple = split(line, "\\s+");
-        if (line == "\n" || line == "\t\n" || tuple.size() < 7) break;
-        tuple2packet(tuple, &packet_set[packet_num++]);
-    }
+std::vector<std::string> split(const std::string& str, const std::string& pattern);
+
+void read_data_set(char * rule_file, char * packet_file);
+
+template <typename T>
+void uniform_shaflle(T* array, int size);
+
+void tuple2rule(std::vector<std::string> tuple, ip_rule* rule);
+
+void tuple2packet(std::vector<std::string> tuple, packet* pkt);
+
+void query_packets(){
+    uniform_shaflle(packet_set, packet_num);
 
     printf("Start query packets.\n");
+    double run_time = 0;
     int i = 0, error_match = 0;
     for (i = 0; i < packet_num; i++){
+        clock_t start = clock();
         int rule_id = query(&packet_set[i]);
+        clock_t end = clock();
+        run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (rule_id != packet_set[i].id){
             error_match++;
             printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
         }
     }
-    printf("Query %d packets, %d error match!\n", packet_num, error_match);
+    printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+
+    printf("Start query packets.\n");
+    run_time = 0;
+    i = 0, error_match = 0;
+    for (i = 0; i < packet_num; i++){
+        clock_t start = clock();
+        int rule_id = oracle(&packet_set[i]);
+        clock_t end = clock();
+        run_time += (double)(end - start) / CLOCKS_PER_SEC;
+        if (rule_id != packet_set[i].id){
+            error_match++;
+            printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
+        }
+    }
+    printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
 }
 
-void insert_rule(char* file){
-    std::ifstream inputFile;
-    inputFile.open(file, std::ios::in);
-    if (!inputFile.is_open()) {
-        printf("Error opening file %s.\n", file);
-        return;
-    }
-    std::string line = "1";
-    while (std::getline(inputFile, line)){
-        std::vector<std::string> tuple = split(line, "\\s+");
-        if (line == "\n" || line == "\t\n" || tuple.size() < 9) break;
-        tuple2rule(tuple, &rule_set[rule_num++]);
-    }
-    inputFile.close();
-
+void insert_rule(){
+    uniform_shaflle(rule_set, rule_num);
+    
     printf("Start insert rules.\n");
+    double run_time = 0;
     int i = 0, sucess_count = 0; 
     for (i = 0; i < rule_num; i++){
+        clock_t start = clock();
         int st = insert(&rule_set[i]);
+        clock_t end = clock();
+        run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (st == 0) sucess_count++; 
     }
-    printf("Insert %d rules, %d sucess!\n", rule_num, sucess_count);
+    printf("Insert %d rules, %d sucess, thoughout %.6f!\n", rule_num, sucess_count, rule_num / run_time);
 }
 
 int main(int argc, char* argv[]){
@@ -74,24 +82,15 @@ int main(int argc, char* argv[]){
     char* x = "../data/rules";
     char* y = "../data/packets";
 
+    read_data_set(x, y);
+
     init_MAT();
     
-    insert_rule(x);
+    insert_rule();
 
     print_trie();
 
-    query_packets(y);
-}
-
-std::vector<std::string> split(const std::string& str, const std::string& pattern) {
-    std::regex re(pattern);
-    std::sregex_token_iterator it(str.begin(), str.end(), re, -1);
-    std::sregex_token_iterator end;
-    std::vector<std::string> tokens;
-    for (; it != end; ++it) {
-        tokens.push_back(*it);
-    }
-    return tokens;
+    query_packets();
 }
 
 // tuple format:
@@ -154,4 +153,51 @@ void tuple2packet(std::vector<std::string> tuple, packet* pkt){
     pkt->id = (unsigned short)std::stoi(tuple[6]);
     // tos
     pkt->tos = 0xff;
+}
+
+void read_data_set(char * rule_file, char * packet_file){
+    std::ifstream inputFile;
+    inputFile.open(rule_file, std::ios::in);
+    if (!inputFile.is_open()) {
+        printf("Error opening file %s.\n", rule_file);
+        return;
+    }else{
+        std::string line = "1";
+        while (std::getline(inputFile, line)){
+            std::vector<std::string> tuple = split(line, "\\s+");
+            if (line == "\n" || line == "\t\n" || tuple.size() < 9) break;
+            tuple2rule(tuple, &rule_set[rule_num++]);
+        }
+        inputFile.close();
+    }
+    inputFile.open(packet_file, std::ios::in);
+    if (!inputFile.is_open()) {
+        printf("Error opening file %s.\n",packet_file);
+        return;
+    }else{
+        std::string line = "1";
+        while (std::getline(inputFile, line)){
+            std::vector<std::string> tuple = split(line, "\\s+");
+            if (line == "\n" || line == "\t\n" || tuple.size() < 7) break;
+            tuple2packet(tuple, &packet_set[packet_num++]);
+        }
+    }
+}
+
+std::vector<std::string> split(const std::string& str, const std::string& pattern) {
+    std::regex re(pattern);
+    std::sregex_token_iterator it(str.begin(), str.end(), re, -1);
+    std::sregex_token_iterator end;
+    std::vector<std::string> tokens;
+    for (; it != end; ++it) {
+        tokens.push_back(*it);
+    }
+    return tokens;
+}
+
+template <typename T>
+void uniform_shaflle(T* array, int size){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(array, array + size, gen);
 }
