@@ -4,7 +4,7 @@
 #include <regex>
 #include <random>
 
-#define MAX_RULE 30000
+#define MAX_RULE 50000
 #define MAX_PACKET 100000
 
 struct ip_rule rule_set[MAX_RULE];
@@ -60,7 +60,7 @@ void query_packets(){
 
 void insert_rule(){
     uniform_shaflle(rule_set, rule_num);
-    
+
     printf("Start insert rules.\n");
     double run_time = 0;
     int i = 0, sucess_count = 0; 
@@ -101,14 +101,17 @@ void tuple2rule(std::vector<std::string> tuple, struct ip_rule* rule){
     std::vector<std::string> dst_mask = split(tuple[1], "/");
     rule->key.value = (unsigned int)std::stoll(src_mask[0]);
     rule->key.mask = (unsigned int)std::stoll(src_mask[1]);
+    rule->key.value &= rule->key.mask;
     // dst
     rule->value.field[0].value = (unsigned int)std::stoll(dst_mask[0]);
     rule->value.field[0].mask = (unsigned int)std::stoll(dst_mask[1]);
+    rule->value.field[0].value &= rule->value.field[0].mask;
     rule->value.field[0].type = MASK;
     rule->value.field[0].inv = 0;
     // protcol
     rule->value.field[1].value = (unsigned int)std::stoll(tuple[2]);
     rule->value.field[1].mask = 0xff;
+    rule->value.field[1].value &= rule->value.field[1].mask;
     rule->value.field[1].type = MASK;
     if (rule->value.field[1].value == 0) rule->value.field[1].mask = 0;
     if (std::stoi(tuple[5]) == 1) rule->value.field[1].inv = 1;
