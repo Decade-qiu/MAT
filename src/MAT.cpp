@@ -12,15 +12,17 @@
 #include "MAT.h"
 #include "../utils/murmurhash.h"
 
-#define SEED 1331
+#define SEED 31
 #define MAX_ZERO_RULE_NUM 4096
-#define MAX_LAYER_NUM 256
-#define MAX_SLOT_NUM 512
-#define MAX_BUCKET_NUM 512
+#define MAX_LAYER_NUM 300
+#define MAX_SLOT_NUM 256
+#define QUICK_FIND_BIT 12
+#define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
 unsigned int seed[MAX_LAYER_NUM];
 
-
+struct simd acc[QUICK_FIND_MAX_NUM];
+struct simd* acc_root;
 
 struct ip_rule* Zc[MAX_ZERO_RULE_NUM];
 int zero_rule_num = 0;
@@ -73,6 +75,7 @@ int store(int layer, struct trie_node* node, unsigned int mask){
                 slot->value = node->value;
                 slot->next = node->next;
                 slot->used = 1;
+                slot->node = node;
                 node->layer = layer;
                 node->index = index;
                 return 0;
@@ -81,6 +84,92 @@ int store(int layer, struct trie_node* node, unsigned int mask){
         }
     }
     node->layer = -1;
+    return 0;
+}
+
+// accelerate add
+int write_acc(struct trie_node* fa, int start, int end){
+    if (start > end) return 0;
+    simd* cur;
+    if (fa->key == nullptr && fa->layer == 0){
+        cur = acc_root;
+    }else{
+        int quick_index = (fa->key->value>>20) & (QUICK_FIND_MAX_NUM-1);
+        cur = &acc[quick_index];
+        if (cur->fa != nullptr && cur->fa != fa){
+            return 0;
+        }
+    }
+    cur->fa = fa;
+    int i = start;
+    while (cur->bucket_num < MAX_BUCKET_NUM && i <= end){
+        ip_key* k = fa->childs[i]->key;
+        ip_value* v = fa->childs[i]->value;
+        switch (cur->bucket_num) {
+            case 0:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 0);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 0);
+                break;
+            case 1:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 1);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 1);
+                break;
+            case 2:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 2);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 2);
+                break;
+            case 3:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 3);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 3);
+                break;
+            case 4:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 4);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 4);
+                break;
+            case 5:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 5);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 5);
+                break;
+            case 6:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 6);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 6);
+                break;
+            case 7:
+                cur->keys = _mm256_blend_epi32(cur->keys, _mm256_set1_epi32(k->value), 1 << 7);
+                cur->masks = _mm256_blend_epi32(cur->masks, _mm256_set1_epi32(k->mask), 1 << 7);
+                break;
+            default:
+                break;
+        }
+        cur->values[cur->bucket_num] = v;
+        cur->next_index[cur->bucket_num] = (k->value>>20) & (QUICK_FIND_MAX_NUM-1);
+        i++;
+        cur->bucket_num++;
+    }
+    return 0;
+}
+
+//accelerate del
+inline int delete_acc(struct trie_node* node){
+    simd* cur;
+    if (node->key == nullptr){
+        cur = acc_root;
+    }else{
+        int quick_index = (node->key->value>>20) & (QUICK_FIND_MAX_NUM-1);
+        cur = &acc[quick_index];
+        if (cur->fa != nullptr && cur->fa != node){
+            return 0;
+        }
+    }
+    int j = 0;
+    cur->fa = nullptr;
+    cur->bucket_num = 0;
+    cur->keys = _mm256_setzero_si256();
+    cur->masks = _mm256_setzero_si256();
+    for (j = 0;j < MAX_BUCKET_NUM;j++){
+        cur->values[j] = nullptr;
+        cur->next_index[j] = -1;
+    }
     return 0;
 }
 
@@ -93,6 +182,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         }
         fa->childs[fa->child_num++] = child;
     }
+    write_acc(fa, fa->child_num-childs.size(), fa->child_num-1);
 
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = mask;
     int i = 0, n = childs.size(), j = 0;
@@ -104,6 +194,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         std::vector<trie_node*> cp = child_pair[i];
         trie_node* father = cp[0];
         trie_node* children = cp[1];
+        write_acc(children, 0, children->child_num-1);
         store(father->layer+1, children, father->next);
         for (j = 0;j < children->child_num;j++){
             child_pair.push_back({children, children->childs[j]});
@@ -114,8 +205,8 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
 }
 
 int delete_node(struct trie_node *fa){
-    if (fa->layer == -1) return 0;
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = 0;
+    delete_acc(fa);
     int i = 0, n = fa->child_num, j = 0;
     fa->child_num = 0;
     std::vector<trie_node*> child_pair;
@@ -124,8 +215,10 @@ int delete_node(struct trie_node *fa){
     }
     for (i = 0;i < n;i++){
         trie_node* children = child_pair[i];
-        if (children->layer == -1) continue;
-        Sc[children->layer-1][children->index-1].used = 0;
+        delete_acc(children);
+        if (children->layer >= 1){
+            Sc[children->layer-1][children->index-1].used = 0;
+        }
         for (j = 0;j < children->child_num;j++){
             child_pair.push_back(children->childs[j]);
         }
@@ -156,7 +249,8 @@ int insert_tree(struct ip_rule* rule){
             slot->value = &rule->value;
             return 0;
         }
-        if (imask >= cmask && (key & cmask) == cur->key->value){
+        // imask >= cmask && (key & cmask) == cur->key->value
+        if ((imask & cmask) == cmask && (key & cmask) == cur->key->value){
             cn = cur;
             cmask = cn->next;
             i = -1, n = cn->child_num;
@@ -248,7 +342,7 @@ struct ip_value* zero_rule_query(const struct packet* pkt){
     return res == -1 ? nullptr : &Zc[res]->value;
 }
 
-struct ip_value* _oracle(const struct packet* pkt){
+struct ip_value* _oracle(const struct packet* pkt, struct trie_node* root){
     ip_value* res = nullptr;
     int max_pri = MIN_PRIORITY;
 
@@ -278,23 +372,69 @@ struct ip_value* _oracle(const struct packet* pkt){
     return res;
 }
 
+int simd_mask(unsigned int t, simd* cur){
+    __m256i value = cur->keys;
+    __m256i mask = cur->masks;
+    __m256i res = _mm256_setzero_si256();
+    __m256i key = _mm256_set1_epi32(t);
+    key = _mm256_and_si256(key, mask);
+    res = _mm256_cmpeq_epi32(key, value);
+    unsigned int matchResults[8];
+    _mm256_storeu_si256((__m256i*)matchResults, res);
+    for (int i = 0;i < cur->bucket_num;i++){
+        if (matchResults[i] == 0xFFFFFFFF) return i;
+    }
+    return -1;
+}
+
+trie_node* simd_accelerate(const struct packet* pkt, ip_value* res, int* max_pri){
+    int index = simd_mask(pkt->src, acc_root);
+    if (index == -1) return root;
+    if (acc_root->values[index]->action != -1 && value_match(pkt, acc_root->values[index])){
+        if (acc_root->values[index]->priority > *max_pri){
+            *max_pri = acc_root->values[index]->priority;
+            res = acc_root->values[index];
+        }
+    }
+    int next = acc_root->next_index[index];
+    while (1){
+        index = simd_mask(pkt->src, &acc[next]);
+        if (index == -1) break;
+        if (acc[next].values[index]->action != -1 && value_match(pkt, acc[next].values[index])){
+            if (acc[next].values[index]->priority > *max_pri){
+                *max_pri = acc[next].values[index]->priority;
+                res = acc[next].values[index];
+            }
+        }
+        if (next == acc[next].next_index[index]) break;
+        else next = acc[next].next_index[index];
+    }
+    return acc[next].fa;
+}
+
 int query(const struct packet* pkt){
+    // stage 1
     ip_value* res = zero_rule_query(pkt);
     int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
-
-    unsigned int cmask = root->next, src = pkt->src;
     int oracle_flag = 0;
+    // stage 2
+    trie_node* pre = root;
+    // pre = simd_accelerate(pkt, res, &max_pri);
+    if (pre != root && pre == nullptr) printf("%x\n", pkt->src);
+    // stage 3
+    unsigned int cmask = pre->next, src = pkt->src;
     uint32_t hash_key = (src & cmask) ^ seed[0], slot_index=0;
     MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &slot_index);
     int layer = 1, index = (slot_index % MAX_SLOT_NUM) + 1;
     while (layer <= MAX_LAYER_NUM){
         struct slot* cur = &Sc[layer-1][index-1];
-        if (cur->used == 0) {
+        if (cur->used == 0) { 
             layer++;
             if (layer > MAX_LAYER_NUM) oracle_flag = 1;
             continue;
         }
         if (cur->key->value == (src & cmask)){
+            pre = cur->node;
             if (cur->value->action >= 0 && value_match(pkt, cur->value)){
                 if (cur->value->priority > max_pri){
                     max_pri = cur->value->priority;
@@ -319,19 +459,18 @@ int query(const struct packet* pkt){
             if (layer > MAX_LAYER_NUM) oracle_flag = 1;
         }
     }
-
+    // stage 4
     if (oracle_flag == 1){
-        ip_value* oracle_res = _oracle(pkt);
+        ip_value* oracle_res = _oracle(pkt, pre);
         if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
     }
-
     return res == nullptr ? 0 : res->id;
 }
 
 int oracle(const struct packet* pkt){
     ip_value* res = zero_rule_query(pkt);
     int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
-    ip_value* oracle_res = _oracle(pkt);
+    ip_value* oracle_res = _oracle(pkt, root);
     if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
     return res == nullptr ? 0 : res->id;
 }
@@ -366,6 +505,16 @@ void init_root(){
     for (int i = 0;i < MAX_CHILD_NUM;i++){
         root->childs[i] = nullptr;
     }
+    acc_root = (struct simd *)malloc((sizeof(int)+sizeof(ip_value*))*MAX_BUCKET_NUM+sizeof(struct trie_node*)+sizeof(int)+64);
+    acc_root->bucket_num = 0;
+    acc_root->fa = root;
+    acc_root->keys = _mm256_set1_epi32(0);
+    acc_root->masks = _mm256_set1_epi32(0);
+    int j = 0;
+    for (j = 0;j < MAX_BUCKET_NUM;j++){
+        acc_root->values[j] = nullptr;
+        acc_root->next_index[j] = -1;
+    }
 }
 
 void init_data_struct(){
@@ -379,6 +528,17 @@ void init_data_struct(){
             Sc[i][j].next = 0;
             Sc[i][j].key = nullptr;
             Sc[i][j].value = nullptr;
+            Sc[i][j].node = nullptr;
+        }
+    }
+    for (i = 0;i < QUICK_FIND_MAX_NUM;i++){
+        acc[i].fa = nullptr;
+        acc[i].bucket_num = 0;
+        acc[i].keys = _mm256_set1_epi32(0);
+        acc[i].masks = _mm256_set1_epi32(0);
+        for (j = 0;j < MAX_BUCKET_NUM;j++){
+            acc[i].values[j] = nullptr;
+            acc[i].next_index[j] = -1;
         }
     }
 }
@@ -414,8 +574,8 @@ void display(trie_node* root){
     while (!q.empty()){
         int s = q.size();
         max_depth++;
-        max_width = std::max(max_width, s);
         total_num += s;
+        max_width = std::max(max_width, s);
         fout << s << '\n';
         while (s--){
             trie_node* cur = q.front();

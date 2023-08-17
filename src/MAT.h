@@ -2,9 +2,11 @@
 #define MAT
 
 #include <vector>
+#include <immintrin.h>
 
-#define FIELD_NUM 4
+#define FIELD_NUM 5
 #define MAX_CHILD_NUM 512
+#define MAX_BUCKET_NUM 8
 #define MIN_PRIORITY INT32_MIN
 
 enum {
@@ -31,7 +33,7 @@ struct ip_key {
 };
 
 struct ip_value {
-    struct ip_field field[FIELD_NUM];
+    struct ip_field field[FIELD_NUM-1];
     int action;
     int priority;
     int id;
@@ -45,6 +47,7 @@ struct ip_rule{
 struct slot{
     struct ip_key* key;
     struct ip_value* value;
+    struct trie_node* node;
     unsigned int next;
     int used;
 };
@@ -57,6 +60,15 @@ struct trie_node{
     unsigned int next;
     int layer;
     int index;
+};
+
+struct simd{
+    // src
+    __m256i keys, masks;
+    int next_index[MAX_BUCKET_NUM];
+    ip_value* values[MAX_BUCKET_NUM]; 
+    struct trie_node* fa;
+    int bucket_num;
 };
 
 struct packet{
