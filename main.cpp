@@ -59,7 +59,7 @@ void query_packets(){
 }
 
 void insert_rule(){
-    // uniform_shaflle(rule_set, rule_num);
+    uniform_shaflle(rule_set, rule_num);
 
     printf("Start insert rules.\n");
     double run_time = 0;
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
     //     return 1;
     // }
     char* x = "../data/rules";
-    char* y = "../data/packets";
+    char* y = "../data/packets"; 
 
     read_data_set(x, y);
 
