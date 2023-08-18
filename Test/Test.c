@@ -14,6 +14,7 @@ int main() {
 
     // Load key and masks into AVX registers
     __m256i simdKey = _mm256_set1_epi32(your_key);
+
     __m256i simdMasks = _mm256_loadu_si256((__m256i*)masks);
     __m256i simdValues = _mm256_loadu_si256((__m256i*)values);
 
