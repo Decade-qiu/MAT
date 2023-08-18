@@ -2,3 +2,8 @@
 
 /build
 
+/build/CMakeFiles
+
+/data
+
+/Test
