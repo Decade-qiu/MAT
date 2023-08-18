@@ -59,7 +59,7 @@ void query_packets(){
 }
 
 void insert_rule(){
-    uniform_shaflle(rule_set, rule_num);
+    // uniform_shaflle(rule_set, rule_num);
 
     printf("Start insert rules.\n");
     double run_time = 0;
