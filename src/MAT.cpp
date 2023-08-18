@@ -14,12 +14,14 @@
 
 #define SEED 31
 #define MAX_ZERO_RULE_NUM 4096
-#define MAX_LAYER_NUM 300
+#define MAX_LAYER_NUM 400
 #define MAX_SLOT_NUM 256
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
 unsigned int seed[MAX_LAYER_NUM];
+
+unsigned int hash_seed[MAX_SLOT_NUM];
 
 struct simd acc[QUICK_FIND_MAX_NUM];
 struct simd* acc_root;
@@ -59,11 +61,16 @@ void init_vtree_node(struct trie_node* node, unsigned int key, unsigned int mask
     }
 }
 
-int store(int layer, struct trie_node* node, unsigned int mask){
+inline int slot_index(unsigned int hash_key){
+    uint32_t index = 0;
+    MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &index);
+    return (index % MAX_SLOT_NUM) + 1;
+}
+
+inline int store(int layer, struct trie_node* node, unsigned int mask){
     if (layer <= MAX_LAYER_NUM && layer >= 1){
-        uint32_t hash_key = (node->key->value & mask) ^ seed[layer-1], slot_index = 0;
-        MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &slot_index);
-        int index = (slot_index % MAX_SLOT_NUM) + 1;
+        uint32_t hash_key = (node->key->value & mask) ^ seed[layer-1]; 
+        int index = slot_index(hash_key);
         while (layer <= MAX_LAYER_NUM){
             struct slot* slot = &Sc[layer-1][index-1];
             if (slot->used==0 || (slot->value->action == -1 && slot->key->value==node->key->value && slot->key->mask==mask)){
@@ -150,7 +157,7 @@ int write_acc(struct trie_node* fa, int start, int end){
 }
 
 //accelerate del
-inline int delete_acc(struct trie_node* node){
+int delete_acc(struct trie_node* node){
     simd* cur;
     if (node->key == nullptr){
         cur = acc_root;
@@ -182,7 +189,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         }
         fa->childs[fa->child_num++] = child;
     }
-    write_acc(fa, fa->child_num-childs.size(), fa->child_num-1);
+    // write_acc(fa, fa->child_num-childs.size(), fa->child_num-1);
 
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = mask;
     int i = 0, n = childs.size(), j = 0;
@@ -194,7 +201,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         std::vector<trie_node*> cp = child_pair[i];
         trie_node* father = cp[0];
         trie_node* children = cp[1];
-        write_acc(children, 0, children->child_num-1);
+        // write_acc(children, 0, children->child_num-1);
         store(father->layer+1, children, father->next);
         for (j = 0;j < children->child_num;j++){
             child_pair.push_back({children, children->childs[j]});
@@ -206,7 +213,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
 
 int delete_node(struct trie_node *fa){
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = 0;
-    delete_acc(fa);
+    // delete_acc(fa);
     int i = 0, n = fa->child_num, j = 0;
     fa->child_num = 0;
     std::vector<trie_node*> child_pair;
@@ -215,7 +222,7 @@ int delete_node(struct trie_node *fa){
     }
     for (i = 0;i < n;i++){
         trie_node* children = child_pair[i];
-        delete_acc(children);
+        // delete_acc(children);
         if (children->layer >= 1){
             Sc[children->layer-1][children->index-1].used = 0;
         }
@@ -309,7 +316,7 @@ int insert(struct ip_rule* rule){
     return st;
 }
 
-int match(unsigned int t, ip_field* f){
+inline int match(unsigned int t, ip_field* f){
     if (f->type == MASK){
         if ((t & f->mask) == f->value) return 1 ^ f->inv;
         return 0 ^ f->inv;
@@ -319,7 +326,7 @@ int match(unsigned int t, ip_field* f){
     return flag_in ^ f->inv;
 }
 
-int value_match(const struct packet* pkt, struct ip_value* value){
+inline int value_match(const struct packet* pkt, struct ip_value* value){
     if (match(pkt->dst, &value->field[0]) &&
         match(pkt->proto, &value->field[1]) &&
         match(pkt->sport, &value->field[2]) &&
@@ -420,12 +427,10 @@ int query(const struct packet* pkt){
     // stage 2
     trie_node* pre = root;
     // pre = simd_accelerate(pkt, res, &max_pri);
-    if (pre != root && pre == nullptr) printf("%x\n", pkt->src);
     // stage 3
     unsigned int cmask = pre->next, src = pkt->src;
-    uint32_t hash_key = (src & cmask) ^ seed[0], slot_index=0;
-    MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &slot_index);
-    int layer = 1, index = (slot_index % MAX_SLOT_NUM) + 1;
+    uint32_t hash_key = (src & cmask) ^ seed[0];
+    int layer = 1, index = slot_index(hash_key);
     while (layer <= MAX_LAYER_NUM){
         struct slot* cur = &Sc[layer-1][index-1];
         if (cur->used == 0) { 
@@ -448,8 +453,7 @@ int query(const struct packet* pkt){
                 layer++;
                 if (layer <= MAX_LAYER_NUM){
                     hash_key = (src & cmask) ^ seed[layer-1];
-                    MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &slot_index);
-                    index = (slot_index % MAX_SLOT_NUM) + 1;
+                    index = slot_index(hash_key);
                 }else{
                     oracle_flag = 1;
                 }
@@ -476,12 +480,21 @@ int oracle(const struct packet* pkt){
 }
 
 void gen_seed(){
-    // std::ifstream fin;
-    // fin.open("../data/seed", std::ios::in);
-    // for (int i = 0;i < MAX_LAYER_NUM;i++) fin >> seed[i];
     srand((int)time(0));
     std::unordered_set<int> seed_set;
     int index = 0;
+    while (index != MAX_SLOT_NUM) {
+        int cur = rand();
+        if (seed_set.count(cur) == 0) {
+            seed_set.insert(cur);
+            hash_seed[index++] = cur;
+        }
+    }
+    // std::ifstream fin;
+    // fin.open("../data/seed", std::ios::in);
+    // for (int i = 0;i < MAX_LAYER_NUM;i++) fin >> seed[i];
+    seed_set.clear();
+    index = 0;
     while (index != MAX_LAYER_NUM) {
         int cur = rand();
         if (seed_set.count(cur) == 0) {
