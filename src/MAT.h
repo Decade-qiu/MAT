@@ -63,7 +63,6 @@ struct trie_node{
 };
 
 struct simd{
-    // src
     __m256i keys, masks;
     int next_index[MAX_BUCKET_NUM];
     ip_value* values[MAX_BUCKET_NUM]; 

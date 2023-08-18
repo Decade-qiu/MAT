@@ -576,7 +576,7 @@ void display(trie_node* root){
         max_depth++;
         total_num += s;
         max_width = std::max(max_width, s);
-        fout << s << '\n';
+        fout << max_depth << " " << s << " " << total_num << '\n';
         while (s--){
             trie_node* cur = q.front();
             q.pop();
