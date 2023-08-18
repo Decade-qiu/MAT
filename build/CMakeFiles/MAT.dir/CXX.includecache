@@ -9,6 +9,8 @@
 /home/qzj/MAT/./src/MAT.h
 vector
 -
+immintrin.h
+-
 
 /home/qzj/MAT/main.cpp
 ./src/MAT.h
@@ -19,6 +21,8 @@ iostream
 -
 regex
 -
+random
+-
 
 /home/qzj/MAT/src/MAT.cpp
 stdio.h
@@ -27,7 +31,17 @@ stdlib.h
 -
 unordered_set
 -
+unordered_map
+-
+queue
+-
+fstream
+-
+iostream
+-
 cstdlib
+-
+cstring
 -
 ctime
 -
@@ -38,6 +52,8 @@ MAT.h
 
 /home/qzj/MAT/src/MAT.h
 vector
+-
+immintrin.h
 -
 
 /home/qzj/MAT/utils/murmurhash.cpp
