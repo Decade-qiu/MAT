@@ -6,7 +6,7 @@ set(mode "release" CACHE INTERNAL "")
 
 if(mode STREQUAL "debug")
     set(CMAKE_BUILD_TYPE Debug)
-    add_definitions(-Wall -g -mavx2)
+    add_definitions(--std=c++11 -Wall -g -mavx2)
 else()
     set(CMAKE_BUILD_TYPE Release)   
     add_definitions(--std=c++11 -mavx2 -O3)
