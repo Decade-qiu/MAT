@@ -1,12 +1,12 @@
 #ifndef MAT
 #define MAT
 
-#include <vector>
 #include <immintrin.h>
 
 #define FIELD_NUM 5
 #define MAX_CHILD_NUM 512
-#define MAX_BUCKET_NUM 8
+#define MAX_ACCELERATE_DEPTH 12
+#define MAX_BUCKET_NUM MAX_ACCELERATE_DEPTH
 #define MIN_PRIORITY INT32_MIN
 
 enum {
@@ -60,13 +60,14 @@ struct trie_node{
     unsigned int next;
     int layer;
     int index;
+    int depth;
+    struct trie_node* path[MAX_ACCELERATE_DEPTH];
+    int path_num = 0;
+    int fa_layer;
 };
 
 struct simd{
-    __m256i keys, masks;
-    int next_index[MAX_BUCKET_NUM];
-    ip_value* values[MAX_BUCKET_NUM]; 
-    struct trie_node* fa;
+    trie_node* buckets[MAX_BUCKET_NUM];
     int bucket_num;
 };
 
@@ -95,6 +96,8 @@ int oracle(const struct packet* pkt);
 int query(const struct packet* pkt);
 
 void print_trie();
+
+void print_acc();
 
 int init_MAT();
 
