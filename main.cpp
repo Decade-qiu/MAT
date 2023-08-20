@@ -37,7 +37,7 @@ void query_packets(){
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (rule_id != packet_set[i].id){
             error_match++;
-            printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
+            if (error_match == 1) printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
         }
     }
     printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
@@ -52,7 +52,7 @@ void query_packets(){
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (rule_id != packet_set[i].id){
             error_match++;
-            printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
+            // printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
         }
     }
     printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
@@ -89,6 +89,8 @@ int main(int argc, char* argv[]){
     insert_rule();
 
     print_trie();
+
+    print_acc();
 
     query_packets();
 }
