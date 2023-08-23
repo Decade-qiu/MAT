@@ -16,7 +16,7 @@
 
 #define SEED 31
 #define MAX_ZERO_RULE_NUM 4096
-#define MAX_LAYER_NUM 400
+#define MAX_LAYER_NUM 360
 #define MAX_SLOT_NUM 256
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
@@ -42,7 +42,7 @@ void init_tree_node(struct trie_node* node, struct ip_rule* rule){
     node->layer = 0;
     node->index = 0;
     node->depth = 0;
-    node->fa_layer = 0;
+    node->father = nullptr;
     node->child_num = 0;
     for (int i = 0;i < MAX_CHILD_NUM;i++){
         node->childs[i] = nullptr;
@@ -64,7 +64,7 @@ void init_vtree_node(struct trie_node* node, unsigned int key, unsigned int mask
     node->layer = 0;
     node->index = 0;
     node->depth = 0;
-    node->fa_layer = 0;
+    node->father = nullptr;
     node->child_num = 0;
     for (int i = 0;i < MAX_CHILD_NUM;i++){
         node->childs[i] = nullptr;
@@ -135,6 +135,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
             return -1;
         }
         fa->childs[fa->child_num++] = child;
+        child->father = fa;
     }
 
     fa->next = mask;
@@ -148,7 +149,6 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         std::vector<trie_node*> cp = child_pair[i];
         trie_node* father = cp[0];
         trie_node* children = cp[1];
-        children->fa_layer = father->layer;
         children->depth = father->depth+1;
         store(father->layer+1, children, father->next);
         for (j = 0;j < children->child_num;j++){
@@ -160,6 +160,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
 }
 
 int dynamic_adjust(std::vector<std::vector<int>> layer_index){
+    // layer = -1的单独遍历处理。
     std::vector<trie_node*> adjust;
     for (trie_node* node : Ec) adjust.push_back(node);
     int i = 0, n = layer_index.size();
@@ -194,7 +195,7 @@ int dynamic_adjust(std::vector<std::vector<int>> layer_index){
     for (i = 0, n = adjust.size();i < n;i++){
         trie_node* cur = adjust[i];
         if (cur->layer != -1) continue;
-        int code = store(cur->fa_layer+1, cur, cur->key->mask);
+        int code = store(cur->father->layer+1, cur, cur->key->mask);
         if (code == 0 && Ec.find(cur) != Ec.end()) Ec.erase(cur);
         std::vector<std::vector<trie_node*>> children;
         int j = 0, m = cur->child_num;
@@ -206,7 +207,6 @@ int dynamic_adjust(std::vector<std::vector<int>> layer_index){
             trie_node* father = cp[0];
             trie_node* child = cp[1];
             if (child->layer != -1) continue;
-            child->fa_layer = father->layer;
             child->depth = father->depth+1;
             int code = store(father->layer+1, child, father->next);
             if (code == 0 && Ec.find(cur) != Ec.end()) Ec.erase(cur);
@@ -216,7 +216,6 @@ int dynamic_adjust(std::vector<std::vector<int>> layer_index){
             m = children.size();
         }
     }
-    // layer = -1的单独遍历处理。
     return 0;
 }
 
@@ -586,7 +585,7 @@ void init_root(){
     root->value = nullptr;
     root->layer = 0;
     root->index = 0;
-    root->fa_layer = 0;
+    root->father = nullptr;
     root->depth = 0;
     root->next = 0;
     root->child_num = 0;
@@ -705,16 +704,16 @@ void print_Sc(){
     for (i = 0;i < MAX_LAYER_NUM;i++){
         for (j = 0;j < MAX_SLOT_NUM;j++){
             if (Sc[i][j].used == 0) continue;
-            if (Sc[i][j].node->fa_layer+1 < i){
+            if (Sc[i][j].node->father->layer+1 < i){
                 int flag = 0;
-                for (k = i-1;k >= Sc[i][j].node->fa_layer+1;k--){
+                for (k = i-1;k >= Sc[i][j].node->father->layer+1;k--){
                     if (Sc[k][j].used == 0){
                         flag = 1;
                     }
                 }
                 if (flag == 0) continue;
                 fout << i << "@" << j << " ";
-                for (k = i;k >= Sc[i][j].node->fa_layer+1;k--){
+                for (k = i;k >= Sc[i][j].node->father->layer+1;k--){
                     fout << Sc[k][j].used << "|";
                     if (Sc[k][j].used == 1){
                         maxid = std::max(maxid, Sc[k][j].value->id);
