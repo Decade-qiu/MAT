@@ -5,7 +5,7 @@
 
 #define FIELD_NUM 5
 #define MAX_CHILD_NUM 512
-#define MAX_ACCELERATE_DEPTH 12
+#define MAX_ACCELERATE_DEPTH 36
 #define MAX_BUCKET_NUM MAX_ACCELERATE_DEPTH
 #define MIN_PRIORITY INT32_MIN
 
@@ -95,9 +95,7 @@ int oracle(const struct packet* pkt);
 
 int query(const struct packet* pkt);
 
-void print_trie();
-
-void print_acc();
+void print_info();
 
 int init_MAT();
 
