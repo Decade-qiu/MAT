@@ -16,8 +16,8 @@
 
 #define SEED 31
 #define MAX_ZERO_RULE_NUM 4096
-#define MAX_LAYER_NUM 360
-#define MAX_SLOT_NUM 256
+#define MAX_LAYER_NUM 256
+#define MAX_SLOT_NUM 128
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
@@ -160,15 +160,13 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
 }
 
 int dynamic_adjust(std::vector<std::vector<int>> layer_index){
-    // layer = -1的单独遍历处理。
     std::vector<trie_node*> adjust;
-    for (trie_node* node : Ec) adjust.push_back(node);
     int i = 0, n = layer_index.size();
     for (i = 0, n = layer_index.size();i < n;i++){
         int layer = layer_index[i][0], index = layer_index[i][1];
         for (;layer <= MAX_LAYER_NUM;layer++){
             struct slot* slot = &Sc[layer-1][index-1];
-            if (slot->used == 0) continue;
+            if (slot->used != 1) continue;
             adjust.push_back(slot->node);
             std::vector<trie_node*> children = {slot->node};
             int j = 0, m = children.size();
@@ -191,12 +189,12 @@ int dynamic_adjust(std::vector<std::vector<int>> layer_index){
         }
         n = layer_index.size();
     }
+    for (trie_node* node : Ec) adjust.push_back(node);
     sort(adjust.begin(), adjust.end(), [](trie_node* a, trie_node* b){return a->depth < b->depth;});
     for (i = 0, n = adjust.size();i < n;i++){
         trie_node* cur = adjust[i];
         if (cur->layer != -1) continue;
-        int code = store(cur->father->layer+1, cur, cur->key->mask);
-        if (code == 0 && Ec.find(cur) != Ec.end()) Ec.erase(cur);
+        store(cur->father->layer+1, cur, cur->key->mask);
         std::vector<std::vector<trie_node*>> children;
         int j = 0, m = cur->child_num;
         for (j = 0;j < m;j++){
@@ -206,15 +204,90 @@ int dynamic_adjust(std::vector<std::vector<int>> layer_index){
             std::vector<trie_node*> cp = children[j];
             trie_node* father = cp[0];
             trie_node* child = cp[1];
-            if (child->layer != -1) continue;
             child->depth = father->depth+1;
-            int code = store(father->layer+1, child, father->next);
-            if (code == 0 && Ec.find(cur) != Ec.end()) Ec.erase(cur);
+            store(father->layer+1, child, father->next);
             for (int k = 0;k < child->child_num;k++){
                 children.push_back({child, child->childs[k]});
             }
             m = children.size();
         }
+    }
+    std::unordered_set<trie_node *>::iterator it = Ec.begin();
+    for (;it != Ec.end();) {
+        if ((*it)->layer != -1) it = Ec.erase(it);
+        else ++it;
+    }
+    return 0;
+}
+
+int dynamic_adjust2(std::unordered_map<int, int> index_layer){
+    std::vector<trie_node*> adjust;
+    std::vector<std::vector<int>> layer_index;
+    for (std::pair<int, int> pair : index_layer){
+        layer_index.push_back({pair.second, MAX_LAYER_NUM, pair.first});
+    }
+    int i = 0, n = layer_index.size();
+    for (i = 0, n = layer_index.size();i < n;i++){
+        int layer_start = layer_index[i][0], layer_end = layer_index[i][1];
+        int layer = 0, index = layer_index[i][2];
+        for (layer = layer_start;layer <= layer_end;layer++){
+            struct slot* slot = &Sc[layer-1][index-1];
+            if (slot->used == 0) continue;
+            adjust.push_back(slot->node);
+            std::vector<trie_node*> children = {slot->node};
+            int j = 0, m = children.size();
+            for (j = 0;j < m;j++){
+                trie_node* child = children[j];
+                if (child->layer >= 1){
+                    if (index_layer.find(child->index) == index_layer.end()){
+                        layer_index.push_back({child->layer+1, MAX_LAYER_NUM, child->index});
+                        index_layer[child->index] = child->layer+1;
+                    }else if (index_layer[child->index] > child->layer+1){
+                        layer_index.push_back({child->layer+1, index_layer[child->index]-1, child->index});
+                        index_layer[child->index] = child->layer+1;
+                    }
+                    Sc[child->layer-1][child->index-1].used = 0;
+                    Sc[child->layer-1][child->index-1].key = nullptr;
+                    Sc[child->layer-1][child->index-1].value = nullptr;
+                    Sc[child->layer-1][child->index-1].node = nullptr;
+                    Sc[child->layer-1][child->index-1].next = 0;
+                    child->layer = -1;
+                    for (int k = 0;k < child->child_num;k++){
+                        children.push_back(child->childs[k]);
+                    }
+                }
+                m = children.size();
+            }
+        }
+        n = layer_index.size();
+    }
+    for (trie_node* node : Ec) adjust.push_back(node);
+    sort(adjust.begin(), adjust.end(), [](trie_node* a, trie_node* b){return a->depth < b->depth;});
+    for (i = 0, n = adjust.size();i < n;i++){
+        trie_node* cur = adjust[i];
+        if (cur->layer != -1) continue;
+        store(cur->father->layer+1, cur, cur->key->mask);
+        std::vector<std::vector<trie_node*>> children;
+        int j = 0, m = cur->child_num;
+        for (j = 0;j < m;j++){
+            children.push_back({cur, cur->childs[j]});
+        }
+        for (j = 0;j < m;j++){
+            std::vector<trie_node*> cp = children[j];
+            trie_node* father = cp[0];
+            trie_node* child = cp[1];
+            child->depth = father->depth+1;
+            store(father->layer+1, child, father->next);
+            for (int k = 0;k < child->child_num;k++){
+                children.push_back({child, child->childs[k]});
+            }
+            m = children.size();
+        }
+    }
+    std::unordered_set<trie_node *>::iterator it = Ec.begin();
+    for (;it != Ec.end();) {
+        if ((*it)->layer != -1) it = Ec.erase(it);
+        else ++it;
     }
     return 0;
 }
@@ -227,11 +300,17 @@ int delete_node(struct trie_node *fa){
     for (i = 0;i < n;i++){
         child_pair.push_back(fa->childs[i]);
     }
-    std::vector<std::vector<int>> index_layer;
+    // std::vector<std::vector<int>> index_layer;
+    std::unordered_map<int, int> index_layer2;
     for (i = 0;i < n;i++){
         trie_node* children = child_pair[i];
         if (children->layer >= 1){
-            index_layer.push_back({children->layer+1, children->index});
+            // index_layer.push_back({children->layer+1, children->index});
+            if (index_layer2.find(children->index) == index_layer2.end()){
+                index_layer2[children->index] = children->layer+1;
+            }else{
+                index_layer2[children->index] = std::min(index_layer2[children->index], children->layer+1);
+            }
             Sc[children->layer-1][children->index-1].used = 0;
             Sc[children->layer-1][children->index-1].key = nullptr;
             Sc[children->layer-1][children->index-1].value = nullptr;
@@ -244,7 +323,8 @@ int delete_node(struct trie_node *fa){
         }
         n = child_pair.size();
     }
-    dynamic_adjust(index_layer);    
+    // dynamic_adjust(index_layer);    
+    dynamic_adjust2(index_layer2);
     return 0;
 }
 
@@ -501,13 +581,10 @@ int query(const struct packet* pkt){
     uint32_t hash_key = (src & cmask) ^ seed[pre->layer];
     int layer = pre->layer+1, index = slot_index(hash_key);
     if (pre->layer == -1) oracle_flag = 1;
-    while (layer <= MAX_LAYER_NUM && oracle_flag == 0){
+    while (layer <= MAX_LAYER_NUM){
         struct slot* cur = &Sc[layer-1][index-1];
         if (cur->used == 0) { 
             break;
-            // layer++;
-            // if (layer > MAX_LAYER_NUM) oracle_flag = 1;
-            // continue;
         }
         if (cur->key->value == (src & cmask)){
             if (cur->value->action >= 0 && value_match(pkt, cur->value)){
@@ -661,7 +738,7 @@ void display(trie_node* root){
     std::ofstream fout;
     fout.open("../data/trie");
     // BFS
-    int max_depth = 0, max_width = 0, total_num = 0;
+    int max_depth = 0, max_width = 0, max_child = 0, total_num = 0, outtable = 0;
     std::queue<struct trie_node*> q;
     q.push(root);
     while (!q.empty()){
@@ -672,29 +749,28 @@ void display(trie_node* root){
         while (s--){
             trie_node* cur = q.front();
             q.pop();
-            if(cur->key != nullptr) {
+            if (cur->layer == -1) outtable++;
+            if (cur->layer >= 1){
                 fout << std::hex << cur->key->value << "/" << std::dec << countOnes(cur->key->mask) << (cur->value->action==-1 ? "V " : " ") << cur->value->id << ' ' << cur->layer << "@" << cur->index << " " << cur->depth << " " << cur->path_num << "\n";
-                if (cur->depth != max_depth){
-                    depth_err = 1;
-                }
+            }
+            if (cur->depth != max_depth){
+                depth_err = 1;
             }
             for (int i = 0;i < cur->child_num;i++){
                 q.push(cur->childs[i]);
             }
+            max_child = std::max(max_child, cur->child_num);
         }
         max_depth++;
         fout << (depth_err==1 ? "ERR" : "ACC") << '\n';
     }
     fout.close();
-    printf("Rule Trie: total_node_num %d, max_depth %d, max_width %d\n", total_num, max_depth, max_width);
+    printf("Trie: total %d, depth %d, width %d max_child %d (%d)\n", total_num, max_depth, max_width, max_child, outtable);
 }
 
 void print_Ec(){
-    std::ofstream fout;
-    fout.open("../data/Ec");
     int j = Ec.size();
-    printf("Ec: total_node_num %d\n", j);
-    fout.close();
+    printf("Ec: not_in_Sc_node_num %d\n", j);
 }
 
 void print_Sc(){
