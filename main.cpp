@@ -15,7 +15,7 @@ int packet_num = 0;
 
 std::vector<std::string> split(const std::string& str, const std::string& pattern);
 
-void read_data_set(char * rule_file, char * packet_file);
+void read_data_set(std::string rule_file, std::string packet_file);
 
 template <typename T>
 void uniform_shaflle(T* array, int size);
@@ -25,7 +25,7 @@ void tuple2rule(std::vector<std::string> tuple, ip_rule* rule);
 void tuple2packet(std::vector<std::string> tuple, packet* pkt);
 
 void query_packets(){
-    uniform_shaflle(packet_set, packet_num);
+    // uniform_shaflle(packet_set, packet_num);
 
     printf("Start query packets.\n");
     double run_time = 0;
@@ -37,25 +37,25 @@ void query_packets(){
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (rule_id != packet_set[i].id){
             error_match++;
-            if (error_match == 1) printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
+            // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
         }
     }
     printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
 
-    printf("Start query packets.\n");
-    run_time = 0;
-    i = 0, error_match = 0;
-    for (i = 0; i < packet_num; i++){
-        clock_t start = clock();
-        int rule_id = oracle(&packet_set[i]);
-        clock_t end = clock();
-        run_time += (double)(end - start) / CLOCKS_PER_SEC;
-        if (rule_id != packet_set[i].id){
-            error_match++;
-            // printf("Packet %d error match, rule id %d should be %d.\n", i+1, rule_id, packet_set[i].id);
-        }
-    }
-    printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+    // printf("Start query packets.(only Oracle)\n");
+    // run_time = 0;
+    // i = 0, error_match = 0;
+    // for (i = 0; i < packet_num; i++){
+    //     clock_t start = clock();
+    //     int rule_id = oracle(&packet_set[i]);
+    //     clock_t end = clock();
+    //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
+    //     if (rule_id != packet_set[i].id){
+    //         error_match++;
+    //         // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
+    //     }
+    // }
+    // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
 }
 
 void insert_rule(){
@@ -79,20 +79,24 @@ int main(int argc, char* argv[]){
     //     printf("Usage: %s rule_file_path packet_file_path", argv[0]);
     //     return 1;
     // }
-    char* x = "../data/rules";
-    char* y = "../data/packets"; 
+    std::string x = "../data/rules_", x1 = "../data/rules.bak";
+    std::string y = "../data/packets_", y1 = "../data/packets.bak"; 
+    int tp[5] = {1, 3, 6, 10, 15};
+    for (int i = 0;i < 5;i++){
+        printf("====================Test %dk====================\n", tp[i]);
 
-    read_data_set(x, y);
+        read_data_set(x+std::to_string(tp[i])+"k", y+std::to_string(tp[i])+"k");
 
-    init_MAT();
-    
-    insert_rule();
+        init_MAT();
+        
+        insert_rule();
 
-    print_trie();
+        print_info();
 
-    print_acc();
+        query_packets();
 
-    query_packets();
+        delete_MAT();
+    }
 }
 
 // tuple format:
@@ -160,7 +164,8 @@ void tuple2packet(std::vector<std::string> tuple, packet* pkt){
     pkt->tos = 0xff;
 }
 
-void read_data_set(char * rule_file, char * packet_file){
+void read_data_set(std::string rule_file, std::string packet_file){
+    rule_num = packet_num = 0;
     std::ifstream inputFile;
     inputFile.open(rule_file, std::ios::in);
     if (!inputFile.is_open()) {
