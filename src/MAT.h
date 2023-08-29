@@ -5,7 +5,7 @@
 
 #define FIELD_NUM 5
 #define MAX_CHILD_NUM 512
-#define MAX_ACCELERATE_DEPTH 16
+#define MAX_ACCELERATE_DEPTH 12
 #define MAX_BUCKET_NUM MAX_ACCELERATE_DEPTH
 #define MIN_PRIORITY INT32_MIN
 
@@ -67,6 +67,7 @@ struct trie_node{
 };
 
 struct simd{
+    __m256i key[2], mask[2];
     trie_node* buckets[MAX_BUCKET_NUM];
     int bucket_num;
 };
@@ -98,5 +99,7 @@ int query(const struct packet* pkt);
 void print_info();
 
 int init_MAT();
+
+int delete_MAT();
 
 #endif
