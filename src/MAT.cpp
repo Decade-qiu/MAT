@@ -9,7 +9,10 @@
 #include <cstdlib> 
 #include <cstring> 
 #include <ctime>  
+#include <string>
+#include <regex>
 #include <algorithm>
+#include <random>
 
 #include "MAT.h"
 #include "../utils/murmurhash.h"
@@ -21,16 +24,34 @@
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
-unsigned int seed[MAX_LAYER_NUM];
+// unsigned int seed[MAX_LAYER_NUM];
+// struct simd acc[QUICK_FIND_MAX_NUM];
+// struct ip_rule* Zc[MAX_ZERO_RULE_NUM];
+// int zero_rule_num = 0;
+// struct slot Sc[MAX_LAYER_NUM][MAX_SLOT_NUM];
+struct MyData {
+    struct ip_rule rule_set[MAX_RULE];
+    int rule_num = 0;
+    struct packet packet_set[MAX_PACKET];
+    int packet_num = 0;
 
-struct simd acc[QUICK_FIND_MAX_NUM];
-
-struct ip_rule* Zc[MAX_ZERO_RULE_NUM];
-int zero_rule_num = 0;
-
-std::unordered_set<struct trie_node*> Ec;
-
-struct slot Sc[MAX_LAYER_NUM][MAX_SLOT_NUM];
+    unsigned int seed[MAX_LAYER_NUM];
+    struct simd acc[QUICK_FIND_MAX_NUM];
+    struct ip_rule* Zc[MAX_ZERO_RULE_NUM];
+    int zero_rule_num;
+    struct slot Sc[MAX_LAYER_NUM][MAX_SLOT_NUM];
+    std::unordered_set<struct trie_node*> Ec;
+} MyData;
+#define seed MyData.seed
+#define acc MyData.acc
+#define Zc MyData.Zc
+#define zero_rule_num MyData.zero_rule_num
+#define Sc MyData.Sc
+#define Ec MyData.Ec
+#define rule_set MyData.rule_set
+#define rule_num MyData.rule_num
+#define packet_set MyData.packet_set
+#define packet_num MyData.packet_num
 
 struct trie_node* root;
 
@@ -74,9 +95,9 @@ inline void init_vtree_node(struct trie_node* node, unsigned int key, unsigned i
     }
 }
 
-inline int slot_index(unsigned int hash_key){
+inline int slot_index(unsigned int a){
     uint32_t index = 0;
-    MurmurHash3_x86_32((uint32_t *)&hash_key, SEED, &index);
+    MurmurHash3_x86_32((uint32_t *)&a, SEED, &index);
     return (index & (MAX_SLOT_NUM-1))+1;
 }
 
@@ -106,23 +127,6 @@ inline int store(int layer, struct trie_node* node, unsigned int mask){
     node->layer = -1;
     Ec.insert(node);
     return 1;
-}
-
-inline void check_equal(simd* cur){
-    __m256i v1 = cur->key[0], v2 = cur->key[1];
-    __m256i m1 = cur->mask[0], m2 = cur->mask[1];
-    unsigned int value[16], mask[16];
-    _mm256_storeu_si256((__m256i*)value, v1);
-    _mm256_storeu_si256((__m256i*)mask, m1);
-    _mm256_storeu_si256((__m256i*)(value+8), v2);
-    _mm256_storeu_si256((__m256i*)(mask+8), m2);    
-    for (int i = 0;i < cur->bucket_num;i++){
-        if (value[i]!=cur->buckets[i]->key->value ||
-            mask[i]!=cur->buckets[i]->key->mask){
-            printf("Error: accelerate error.\n");
-            exit(0);
-        }
-    }
 }
 
 // accelerate add
@@ -197,109 +201,51 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
     fa->next = mask;
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = mask;
     int i = 0, n = childs.size(), j = 0;
-    std::vector<std::vector<trie_node*>> child_pair;
+    std::queue<std::vector<trie_node*>> child_pair;
     for (i = 0;i < n;i++){
-        child_pair.push_back({fa, childs[i]});
+        child_pair.push({fa, childs[i]});
     }
-    for (i = 0;i < n;i++){
-        std::vector<trie_node*> cp = child_pair[i];
+    while (child_pair.size()){
+        std::vector<trie_node*> cp = child_pair.front(); 
+        child_pair.pop();
         trie_node* father = cp[0];
         trie_node* children = cp[1];
         children->depth = father->depth+1;
         store(father->layer+1, children, father->next);
         for (j = 0;j < children->child_num;j++){
-            child_pair.push_back({children, children->childs[j]});
+            child_pair.push({children, children->childs[j]});
         }
         n = child_pair.size();
     }
     return 0;
 }
 
-// int dynamic_adjust(std::vector<std::vector<int>> layer_index){
-//     std::vector<trie_node*> adjust;
-//     int i = 0, n = layer_index.size();
-//     for (i = 0, n = layer_index.size();i < n;i++){
-//         int layer = layer_index[i][0], index = layer_index[i][1];
-//         for (;layer <= MAX_LAYER_NUM;layer++){
-//             struct slot* slot = &Sc[layer-1][index-1];
-//             if (slot->used != 1) continue;
-//             adjust.push_back(slot->node);
-//             std::vector<trie_node*> children = {slot->node};
-//             int j = 0, m = children.size();
-//             for (j = 0;j < m;j++){
-//                 trie_node* child = children[j];
-//                 if (child->layer >= 1){
-//                     layer_index.push_back({child->layer+1, child->index});
-//                     Sc[child->layer-1][child->index-1].used = 0;
-//                     Sc[child->layer-1][child->index-1].key = nullptr;
-//                     Sc[child->layer-1][child->index-1].value = nullptr;
-//                     Sc[child->layer-1][child->index-1].node = nullptr;
-//                     Sc[child->layer-1][child->index-1].next = 0;
-//                     child->layer = -1;
-//                     for (int k = 0;k < child->child_num;k++){
-//                         children.push_back(child->childs[k]);
-//                     }
-//                 }
-//                 m = children.size();
-//             }
-//         }
-//         n = layer_index.size();
-//     }
-//     for (trie_node* node : Ec) adjust.push_back(node);
-//     sort(adjust.begin(), adjust.end(), [](trie_node* a, trie_node* b){return a->depth < b->depth;});
-//     for (i = 0, n = adjust.size();i < n;i++){
-//         trie_node* cur = adjust[i];
-//         if (cur->layer != -1) continue;
-//         store(cur->father->layer+1, cur, cur->key->mask);
-//         std::vector<std::vector<trie_node*>> children;
-//         int j = 0, m = cur->child_num;
-//         for (j = 0;j < m;j++){
-//             children.push_back({cur, cur->childs[j]});
-//         }
-//         for (j = 0;j < m;j++){
-//             std::vector<trie_node*> cp = children[j];
-//             trie_node* father = cp[0];
-//             trie_node* child = cp[1];
-//             child->depth = father->depth+1;
-//             store(father->layer+1, child, father->next);
-//             for (int k = 0;k < child->child_num;k++){
-//                 children.push_back({child, child->childs[k]});
-//             }
-//             m = children.size();
-//         }
-//     }
-//     std::unordered_set<trie_node *>::iterator it = Ec.begin();
-//     for (;it != Ec.end();) {
-//         if ((*it)->layer != -1) it = Ec.erase(it);
-//         else ++it;
-//     }
-//     return 0;
-// }
-
 inline int dynamic_adjust2(std::unordered_map<int, int> index_layer){
     std::vector<trie_node*> adjust;
-    std::vector<std::vector<int>> layer_index;
+    std::queue<std::vector<int>> layer_index;
     for (std::pair<int, int> pair : index_layer){
-        layer_index.push_back({pair.second, MAX_LAYER_NUM, pair.first});
+        layer_index.push({pair.second, MAX_LAYER_NUM, pair.first});
     }
-    int i = 0, n = layer_index.size();
-    for (i = 0, n = layer_index.size();i < n;i++){
-        int layer_start = layer_index[i][0], layer_end = layer_index[i][1];
-        int layer = 0, index = layer_index[i][2];
+    while (layer_index.size()){
+        std::vector<int> cur = layer_index.front();
+        layer_index.pop();
+        int layer_start = cur[0], layer_end = cur[1];
+        int layer = 0, index = cur[2];
         for (layer = layer_start;layer <= layer_end;layer++){
             struct slot* slot = &Sc[layer-1][index-1];
             if (slot->used == 0) continue;
             adjust.push_back(slot->node);
-            std::vector<trie_node*> children = {slot->node};
-            int j = 0, m = children.size();
-            for (j = 0;j < m;j++){
-                trie_node* child = children[j];
+            std::queue<trie_node*> children;
+            children.push(slot->node);
+            while (children.size()){
+                trie_node* child = children.front();
+                children.pop();
                 if (child->layer >= 1){
                     if (index_layer.find(child->index) == index_layer.end()){
-                        layer_index.push_back({child->layer+1, MAX_LAYER_NUM, child->index});
+                        layer_index.push({child->layer+1, MAX_LAYER_NUM, child->index});
                         index_layer[child->index] = child->layer+1;
                     }else if (index_layer[child->index] > child->layer+1){
-                        layer_index.push_back({child->layer+1, index_layer[child->index]-1, child->index});
+                        layer_index.push({child->layer+1, index_layer[child->index]-1, child->index});
                         index_layer[child->index] = child->layer+1;
                     }
                     Sc[child->layer-1][child->index-1].used = 0;
@@ -309,34 +255,32 @@ inline int dynamic_adjust2(std::unordered_map<int, int> index_layer){
                     Sc[child->layer-1][child->index-1].next = 0;
                     child->layer = -1;
                     for (int k = 0;k < child->child_num;k++){
-                        children.push_back(child->childs[k]);
+                        children.push(child->childs[k]);
                     }
                 }
-                m = children.size();
             }
         }
-        n = layer_index.size();
     }
     for (trie_node* node : Ec) adjust.push_back(node);
     sort(adjust.begin(), adjust.end(), [](trie_node* a, trie_node* b){return a->depth < b->depth;});
-    for (i = 0, n = adjust.size();i < n;i++){
+    for (int i = 0, n = adjust.size();i < n;i++){
         trie_node* cur = adjust[i];
         if (cur->layer != -1) continue;
         store(cur->father->layer+1, cur, cur->father->next);
-        std::vector<std::vector<trie_node*>> children;
+        std::queue<std::vector<trie_node*>> children;
         int j = 0, m = cur->child_num;
         for (j = 0;j < m;j++){
-            children.push_back({cur, cur->childs[j]});
+            children.push({cur, cur->childs[j]});
         }
-        for (j = 0;j < m;j++){
-            std::vector<trie_node*> cp = children[j];
+        while (children.size()){
+            std::vector<trie_node*> cp = children.front();
+            children.pop();
             trie_node* father = cp[0];
             trie_node* child = cp[1];
             store(father->layer+1, child, father->next);
             for (int k = 0;k < child->child_num;k++){
-                children.push_back({child, child->childs[k]});
+                children.push({child, child->childs[k]});
             }
-            m = children.size();
         }
     }
     std::unordered_set<trie_node *>::iterator it = Ec.begin();
@@ -351,13 +295,14 @@ inline int delete_node(struct trie_node *fa){
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = 0;
     int i = 0, n = fa->child_num, j = 0;
     fa->child_num = 0;
-    std::vector<trie_node*> child_pair;
+    std::queue<trie_node*> child_pair;
     for (i = 0;i < n;i++){
-        child_pair.push_back(fa->childs[i]);
+        child_pair.push(fa->childs[i]);
     }
     std::unordered_map<int, int> index_layer2;
-    for (i = 0;i < n;i++){
-        trie_node* children = child_pair[i];
+    while (child_pair.size()){
+        trie_node* children = child_pair.front();
+        child_pair.pop();
         if (children->layer >= 1){
             if (index_layer2.find(children->index) == index_layer2.end()){
                 index_layer2[children->index] = children->layer+1;
@@ -371,23 +316,26 @@ inline int delete_node(struct trie_node *fa){
             Sc[children->layer-1][children->index-1].next = 0;
             children->layer = -1;
             for (j = 0;j < children->child_num;j++){
-                child_pair.push_back(children->childs[j]);
+                child_pair.push(children->childs[j]);
             }
         }
-        n = child_pair.size();
     }
     dynamic_adjust2(index_layer2);
     return 0;
 }
 
-int insert_path(std::vector<struct trie_node*> childs, trie_node* pre){
+int insert_path(std::vector<struct trie_node*> children, trie_node* pre){
     int insert_idx = pre->depth-1;
     if (insert_idx >= MAX_ACCELERATE_DEPTH) return 1;
-    int i = 0, n = childs.size(), j = 0;
-    for (i = 0;i < n;i++){
-        struct trie_node* cur = childs[i];
-        // if (cur->depth > MAX_ACCELERATE_DEPTH) break;
-        j = cur->path_num;
+    std::queue<struct trie_node*> childs;
+    for (struct trie_node* child : children){
+        childs.push(child);
+    }
+    while (childs.size()){
+        struct trie_node* cur = childs.front();
+        childs.pop();
+        if (cur->depth > MAX_ACCELERATE_DEPTH) break;
+        int j = cur->path_num;
         if (j >= MAX_ACCELERATE_DEPTH) j--;
         for (;j > insert_idx;j--){
             cur->path[j] = cur->path[j-1];
@@ -396,9 +344,8 @@ int insert_path(std::vector<struct trie_node*> childs, trie_node* pre){
         if (cur->path_num < MAX_ACCELERATE_DEPTH) cur->path_num++;
         write_acc(cur);
         for (j = 0;j < cur->child_num;j++){
-            childs.push_back(cur->childs[j]);
+            childs.push(cur->childs[j]);
         }
-        n = childs.size();
     }
     return 0;
 }
@@ -909,7 +856,170 @@ void print_Sc(){
 
 void print_info(){
     display(root);
-    print_acc();
-    print_Ec();
+    // print_acc();
+    // print_Ec();
     // print_Sc();
+}
+
+std::vector<std::string> split(const std::string& str, const std::string& pattern) {
+    std::regex re(pattern);
+    std::sregex_token_iterator it(str.begin(), str.end(), re, -1);
+    std::sregex_token_iterator end;
+    std::vector<std::string> tokens;
+    for (; it != end; ++it) {
+        tokens.push_back(*it);
+    }
+    return tokens;
+}
+
+// tuple format:
+// src/mask dst/mask proto sport dport pinv sinv dinv priority(id)
+void tuple2rule(std::vector<std::string> tuple, struct ip_rule* rule){
+    // src
+    std::vector<std::string> src_mask = split(tuple[0], "/");
+    std::vector<std::string> dst_mask = split(tuple[1], "/");
+    rule->key.value = (unsigned int)std::stoll(src_mask[0]);
+    rule->key.mask = (unsigned int)std::stoll(src_mask[1]);
+    rule->key.value &= rule->key.mask;
+    // dst
+    rule->value.field[0].value = (unsigned int)std::stoll(dst_mask[0]);
+    rule->value.field[0].mask = (unsigned int)std::stoll(dst_mask[1]);
+    rule->value.field[0].value &= rule->value.field[0].mask;
+    rule->value.field[0].type = MASK;
+    rule->value.field[0].inv = 0;
+    // protcol
+    rule->value.field[1].value = (unsigned int)std::stoll(tuple[2]);
+    rule->value.field[1].mask = 0xff;
+    rule->value.field[1].value &= rule->value.field[1].mask;
+    rule->value.field[1].type = MASK;
+    if (rule->value.field[1].value == 0) rule->value.field[1].mask = 0;
+    if (std::stoi(tuple[5]) == 1) rule->value.field[1].inv = 1;
+    else rule->value.field[1].inv = 0;
+    // sport
+    std::vector<std::string> sport_mask = split(tuple[3], ":");
+    rule->value.field[2].value = (unsigned int)std::stoll(sport_mask[0]);
+    rule->value.field[2].mask = (unsigned int)std::stoll(sport_mask[1]);
+    rule->value.field[2].type = RANGE;
+    if (std::stoi(tuple[6]) == 1) rule->value.field[2].inv = 1;
+    else rule->value.field[2].inv = 0;
+    // dport
+    std::vector<std::string> dport_mask = split(tuple[4], ":");
+    rule->value.field[3].value = (unsigned int)std::stoll(dport_mask[0]);
+    rule->value.field[3].mask = (unsigned int)std::stoll(dport_mask[1]);
+    rule->value.field[3].type = RANGE;
+    if (std::stoi(tuple[7]) == 1) rule->value.field[3].inv = 1;
+    else rule->value.field[3].inv = 0;
+    // priority (1 > 2 > 3 > ...)
+    rule->value.priority = -std::stoi(tuple[8]);
+    // id
+    rule->value.id = -rule->value.priority;
+    // action
+    rule->value.action = ACCEPT;
+}
+
+// packet format:
+// ID=id src dst proto sport dport rule_id
+// rule_id is the rule which the packet should match
+void tuple2packet(std::vector<std::string> tuple, packet* pkt){
+    // src
+    pkt->src = (unsigned int)std::stoll(tuple[1]);
+    // dst
+    pkt->dst = (unsigned int)std::stoll(tuple[2]);
+    // protcol
+    pkt->proto = (unsigned char)std::stoi(tuple[3]);
+    // sport
+    pkt->sport = (unsigned short)std::stoi(tuple[4]);
+    // dport
+    pkt->dport = (unsigned short)std::stoi(tuple[5]);
+    // rule_id
+    pkt->id = (unsigned short)std::stoi(tuple[6]);
+    // tos
+    pkt->tos = 0xff;
+}
+
+template <typename T>
+void uniform_shaflle(T* array, int size){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(array, array + size, gen);
+}
+
+void read_data_set(std::string rule_file, std::string packet_file){
+    rule_num = packet_num = 0;
+    std::ifstream inputFile;
+    inputFile.open(rule_file, std::ios::in);
+    if (!inputFile.is_open()) {
+        printf("Error opening file %s.\n", rule_file);
+        return;
+    }else{
+        std::string line = "1";
+        while (std::getline(inputFile, line)){
+            std::vector<std::string> tuple = split(line, "\\s+");
+            if (line == "\n" || line == "\t\n" || tuple.size() < 9) break;
+            tuple2rule(tuple, &rule_set[rule_num++]);
+        }
+        inputFile.close();
+    }
+    inputFile.open(packet_file, std::ios::in);
+    if (!inputFile.is_open()) {
+        printf("Error opening file %s.\n",packet_file);
+        return;
+    }else{
+        std::string line = "1";
+        while (std::getline(inputFile, line)){
+            std::vector<std::string> tuple = split(line, "\\s+");
+            if (line == "\n" || line == "\t\n" || tuple.size() < 7) break;
+            tuple2packet(tuple, &packet_set[packet_num++]);
+        }
+    }
+}
+
+void query_packets(){
+    uniform_shaflle(packet_set, packet_num);
+
+    printf("Start query packets.\n");
+    double run_time = 0;
+    int i = 0, error_match = 0;
+    for (i = 0; i < packet_num; i++){
+        clock_t start = clock();
+        int rule_id = query(&packet_set[i]);
+        clock_t end = clock();
+        run_time += (double)(end - start) / CLOCKS_PER_SEC;
+        if (rule_id != packet_set[i].id){
+            error_match++;
+            // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
+        }   
+    }
+    printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+
+    // printf("Start query packets.(only Oracle)\n");
+    // run_time = 0;
+    // i = 0, error_match = 0;
+    // for (i = 0; i < packet_num; i++){
+    //     clock_t start = clock();
+    //     int rule_id = oracle(&packet_set[i]);
+    //     clock_t end = clock();
+    //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
+    //     if (rule_id != packet_set[i].id){
+    //         error_match++;
+    //         // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
+    //     }
+    // }
+    // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+}
+
+void insert_rule(){
+    uniform_shaflle(rule_set, rule_num);
+
+    printf("Start insert rules.\n");
+    double run_time = 0;
+    int i = 0, sucess_count = 0; 
+    for (i = 0; i < rule_num; i++){
+        clock_t start = clock();
+        int st = insert(&rule_set[i]);
+        clock_t end = clock();
+        run_time += (double)(end - start) / CLOCKS_PER_SEC;
+        if (st == 0) sucess_count++; 
+    }
+    printf("Insert %d rules, %d sucess, thoughout %.6f!\n", rule_num, sucess_count, rule_num / run_time);
 }

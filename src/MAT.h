@@ -1,7 +1,11 @@
 #ifndef MAT
 #define MAT
 
+#include <string>
 #include <immintrin.h>
+
+#define MAX_RULE 50000
+#define MAX_PACKET 100000
 
 #define FIELD_NUM 5
 #define MAX_CHILD_NUM 512
@@ -101,5 +105,11 @@ void print_info();
 int init_MAT();
 
 int delete_MAT();
+
+void read_data_set(std::string rule_file, std::string packet_file);
+
+void query_packets();
+
+void insert_rule();
 
 #endif
