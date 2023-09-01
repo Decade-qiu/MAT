@@ -49,25 +49,25 @@ struct ip_rule{
 };
 
 struct slot{
+    int used;
+    unsigned int next;
     struct ip_key* key;
     struct ip_value* value;
     struct trie_node* node;
-    unsigned int next;
-    int used;
 };
 
 struct trie_node{
+    unsigned int next;
     struct ip_key* key;  
     struct ip_value* value;
     struct trie_node* childs[MAX_CHILD_NUM];
     int child_num = 0;
-    unsigned int next;
     int layer;
     int index;
-    int depth;
     struct trie_node* path[MAX_ACCELERATE_DEPTH];
     int path_num = 0;
     trie_node* father;
+    int depth;
 };
 
 struct simd{
@@ -93,12 +93,6 @@ struct packet{
 //     unsigned int type;
 //     struct ip_rule rule;
 // };
-
-int insert(struct ip_rule* rule);
-
-int oracle(const struct packet* pkt);
-
-int query(const struct packet* pkt);
 
 void print_info();
 

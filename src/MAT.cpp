@@ -9,28 +9,27 @@
 #include <cstdlib> 
 #include <cstring> 
 #include <ctime>  
-#include <string>
 #include <regex>
 #include <algorithm>
 #include <random>
-
+#include <cstddef>
 #include "MAT.h"
 // #include "../utils/murmurhash.h"
 
-#define SEED 171
+// #define SEED 171
 #define MAX_ZERO_RULE_NUM 512
-#define MAX_LAYER_NUM 300
+#define MAX_LAYER_NUM 512
 #define MAX_SLOT_NUM 128
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
 struct MAT_DATA_STRUCTURE {
-    struct ip_rule rule_set[MAX_RULE];
     struct packet packet_set[MAX_PACKET];
+    struct ip_rule rule_set[MAX_RULE];
     struct slot Sc[MAX_LAYER_NUM][MAX_SLOT_NUM];
     struct simd acc[QUICK_FIND_MAX_NUM];
+    struct ip_rule Zc[MAX_ZERO_RULE_NUM];
     unsigned int seed[MAX_LAYER_NUM];
-    struct ip_rule* Zc[MAX_ZERO_RULE_NUM];
     int rule_num;
     int packet_num;
     int zero_rule_num;
@@ -49,7 +48,6 @@ struct MAT_DATA_STRUCTURE {
 #define packet_num      data.packet_num
 #define loops           data.loops
 #define hash            data.hash
-
 struct trie_node* root;
 
 inline void init_tree_node(struct trie_node* node, struct ip_rule* rule){
@@ -101,9 +99,6 @@ inline int slot_index(unsigned int a){
     a = a ^ (a >> 4);
     a = a * 0x27d4eb2d;
     a = a ^ (a >> 15);
-    // 8 bit
-    a = a ^ (a >> 16);
-    a = a ^ (a >> 8);
     return (a & (MAX_SLOT_NUM-1))+1;
 }
 
@@ -139,12 +134,11 @@ inline int store(int layer, struct trie_node* node, unsigned int mask){
 int write_acc(struct trie_node* cur){
     if (cur->depth > MAX_ACCELERATE_DEPTH) return 0;
     int quick_index = cur->key->value >> (32-QUICK_FIND_BIT);
-    int i = 0, j = 0;
-    for (i = 0;i < QUICK_FIND_MAX_NUM;++i){
+    for (int i = 0;i < QUICK_FIND_MAX_NUM;++i){
         if ((quick_index & i) == quick_index){
             simd* acc_cur = &acc[i];
             if (acc_cur->bucket_num <= cur->path_num){
-                for (j = 0;j < cur->path_num;++j){
+                for (int j = 0;j < cur->path_num;++j){
                     acc_cur->buckets[j] = cur->path[j];
                 }
                 acc_cur->key[0] = _mm256_set_epi32(
@@ -195,23 +189,19 @@ int write_acc(struct trie_node* cur){
 }
 
 int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, unsigned int mask){
+    std::queue<std::vector<trie_node*>> child_pair;
     for (struct trie_node* child : childs){
         if (fa->child_num >= MAX_CHILD_NUM){
             printf("Error: too many childs exceed %d.\n", MAX_CHILD_NUM);
             return -1;
         }
+        child_pair.push({fa, child});
         fa->childs[fa->child_num] = child;
         ++fa->child_num;
         child->father = fa;
     }
-
     fa->next = mask;
     if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = mask;
-    int i = 0, n = childs.size(), j = 0;
-    std::queue<std::vector<trie_node*>> child_pair;
-    for (i = 0;i < n;++i){
-        child_pair.push({fa, childs[i]});
-    }
     while (child_pair.size()){
         std::vector<trie_node*> cp = child_pair.front(); 
         child_pair.pop();
@@ -219,7 +209,7 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         trie_node* children = cp[1];
         children->depth = father->depth+1;
         store(father->layer+1, children, father->next);
-        for (j = 0;j < children->child_num;++j){
+        for (int j = 0;j < children->child_num;++j){
             child_pair.push({children, children->childs[j]});
         }
     }
@@ -468,7 +458,7 @@ int insert(struct ip_rule* rule){
             printf("Error: too many zero rules exceed %d.\n", MAX_ZERO_RULE_NUM);
             return -1;
         }
-        Zc[zero_rule_num] = rule;
+        Zc[zero_rule_num] = *rule;
         ++zero_rule_num;
         return 0;
     }
@@ -499,21 +489,20 @@ inline int value_match(const struct packet* pkt, struct ip_value* value){
 inline struct ip_value* zero_rule_query(const struct packet* pkt){
     int i = 0, res = -1, max_pri = MIN_PRIORITY;
     for (i = 0;i < zero_rule_num;++i){
-        if (value_match(pkt, &Zc[i]->value)){
-            if (Zc[i]->value.priority > max_pri){
+        if (value_match(pkt, &Zc[i].value)){
+            if (Zc[i].value.priority > max_pri){
                 res = i;
-                max_pri = Zc[i]->value.priority;
+                max_pri = Zc[i].value.priority;
             }
         }
     }
-    return res == -1 ? nullptr : &Zc[res]->value;
+    return res == -1 ? nullptr : &Zc[res].value;
 }
 
-inline struct ip_value* _oracle(const struct packet* pkt, struct trie_node* root){
+inline struct ip_value* _oracle(const struct packet* pkt, struct trie_node* input){
     ip_value* res = nullptr;
     int max_pri = MIN_PRIORITY;
-
-    trie_node* cur = root;
+    trie_node* cur = input;
     unsigned int cmask = cur->next, src = pkt->src;
     int i = 0, n = cur->child_num;
     while (i < n){
@@ -604,12 +593,11 @@ inline trie_node* accelerate(const struct packet* pkt, ip_value** res, int* max_
 }   
 
 int query(const struct packet* pkt){
+    int oracle_flag = 0; 
     // stage 1
     ip_value* res = nullptr; 
     res = zero_rule_query(pkt);
     int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
-    int oracle_flag = 0; 
-    return 0;
     // stage 2
     trie_node* pre = root;
     pre = accelerate(pkt, &res, &max_pri);    
@@ -649,7 +637,7 @@ int query(const struct packet* pkt){
             ++layer;
             if (layer > MAX_LAYER_NUM) oracle_flag = 1;
         }
-    }   
+    }  
     // stage 4
     if (oracle_flag == 1){
         ip_value* oracle_res = _oracle(pkt, pre);
@@ -711,9 +699,6 @@ void init_data_struct(){
     loops = hash = 0;
     Ec.clear();
     int i = 0, j = 0;
-    for (i = 0;i < MAX_ZERO_RULE_NUM;++i){
-        Zc[i] = nullptr;
-    }
     for (i = 0;i < MAX_LAYER_NUM;++i){
         for (j = 0;j < MAX_SLOT_NUM;++j){
             Sc[i][j].used = 0;
@@ -994,10 +979,12 @@ void query_packets(){
     printf("Start query packets.\n");
     double run_time = 0;
     int i = 0, error_match = 0;
+    clock_t start, end;
     for (i = 0; i < packet_num; ++i){
-        clock_t start = clock();
-        int rule_id = query(&packet_set[i]);
-        clock_t end = clock();
+        struct packet *p = &packet_set[i];
+        start = clock();
+        int rule_id = query(p);
+        end = clock();
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (rule_id != packet_set[i].id){
             error_match++;
