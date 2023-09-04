@@ -18,8 +18,8 @@
 
 // #define SEED 171
 #define MAX_ZERO_RULE_NUM 512
-#define MAX_LAYER_NUM 512
-#define MAX_SLOT_NUM 128
+#define MAX_LAYER_NUM 128
+#define MAX_SLOT_NUM 512
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
