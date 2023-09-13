@@ -13,13 +13,14 @@
 #include <algorithm>
 #include <random>
 #include <cstddef>
+#include <iomanip>
 #include "MAT.h"
 // #include "../utils/murmurhash.h"
 
 // #define SEED 171
 #define MAX_ZERO_RULE_NUM 512
 #define MAX_LAYER_NUM 128
-#define MAX_SLOT_NUM 512
+#define MAX_SLOT_NUM (1 << 13)
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
@@ -73,6 +74,12 @@ inline void init_vtree_node(struct trie_node* node, unsigned int key, unsigned i
     node->key->value = key & mask;
     node->key->mask = mask;
     node->value = (struct ip_value*)malloc(sizeof(struct ip_value));
+    for (int i = 0;i < 4;++i){
+        node->value->field[i].type = MASK;
+        node->value->field[i].value = 0;
+        node->value->field[i].mask = 0;
+        node->value->field[i].inv = 0;
+    }
     node->value->action = -1;
     node->value->id = node->value->priority = 0;
     node->next = 0;
@@ -853,7 +860,70 @@ void print_Sc(){
     fout.close();
 }
 
-void print_info(){
+void display_longest_path(int scale){
+    if (root == nullptr) return;
+    std::ofstream fout;
+    fout.open("../data/longest_path_"+std::to_string(scale));
+    // BFS
+    int max_depth = 0;
+    struct trie_node* max_node = nullptr;
+    std::queue<struct trie_node*> q;
+    q.push(root);
+    while (!q.empty()){
+        int s = q.size();
+        while (s--){
+            trie_node* cur = q.front();
+            q.pop();
+            if (cur->depth > max_depth){
+                max_depth = cur->depth;
+                max_node = cur;
+            }
+            for (int i = 0;i < cur->child_num;++i){
+                q.push(cur->childs[i]);
+            }
+        }
+    }
+    while (max_node != root){
+        // fout << std::hex << max_node->key->value << "/" << std::dec << countOnes(max_node->key->mask) << "" << std::hex << max_node->value->field[0].value << "/" << std::dec << countOnes(max_node->value->field[0].mask) << " " << std::dec << max_node->value->field[1].value << " " << std::dec << max_node->value->field[2].value << ":" << std::dec << max_node->value->field[2].mask << " " << std::dec << max_node->value->field[3].value << ":" << std::dec << max_node->value->field[3].mask << " ";
+        // if (max_node->value->action == -1) fout << "V ";
+        // else fout << max_node->value->id << " ";
+        std::ostringstream oss1;
+        oss1 << std::hex << max_node->key->value << "/" << std::dec << countOnes(max_node->key->mask) << " ";
+        std::string output1 = oss1.str();
+        fout << std::setw(12) << output1;
+
+        std::ostringstream oss2;
+        oss2 << std::hex << max_node->value->field[0].value << "/" << std::dec << countOnes(max_node->value->field[0].mask) << " ";
+        std::string output2 = oss2.str();
+        fout << std::setw(12) << output2;
+
+        std::ostringstream oss3;
+        oss3 << std::dec << max_node->value->field[1].value << " ";
+        std::string output3 = oss3.str();
+        fout << std::setw(4) << output3;
+
+        std::ostringstream oss4;
+        oss4 << std::dec << max_node->value->field[2].value << ":" << std::dec << max_node->value->field[2].mask << " ";
+        std::string output4 = oss4.str();
+        fout << std::setw(12) << output4;
+
+        std::ostringstream oss5;
+        oss5 << std::dec << max_node->value->field[3].value << ":" << std::dec << max_node->value->field[3].mask << " ";
+        std::string output5 = oss5.str();
+        fout << std::setw(12) << output5;
+
+        if (max_node->value->action == -1) 
+            fout << "V";
+        else 
+            fout << max_node->value->id;
+        fout << "\n";
+        max_node = max_node->father;
+    }
+    fout.close();
+}
+
+void print_info(int scale){
+    display_longest_path(scale);
     display(root);
     // print_acc();
     // print_Ec();

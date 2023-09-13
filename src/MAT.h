@@ -4,7 +4,7 @@
 #include <string>
 #include <immintrin.h>
 
-#define MAX_RULE 50000
+#define MAX_RULE 60000
 #define MAX_PACKET 100000
 
 #define FIELD_NUM 5
@@ -21,7 +21,7 @@ enum {
 };
 
 enum {
-    MASK = 0, RANGE
+    MASK = 0, RANGE, EXACT
 };
 
 struct ip_field {
@@ -94,7 +94,7 @@ struct packet{
 //     struct ip_rule rule;
 // };
 
-void print_info();
+void print_info(int scale);
 
 int init_MAT();
 
