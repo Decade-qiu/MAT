@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 from collections import defaultdict, Counter
 import matplotlib.pyplot as plt
+from ipaddress import *
 # aaa = "[0, 0, 0, 0, 1, []], 
 #             [0, 0, 1, 2**32, 1, []], 
 #             [1, 2**32, 0, 0, 1, []], 
@@ -14,13 +15,11 @@ import matplotlib.pyplot as plt
 #             [2**16+1, 2**24, 2**24+1, 2**32, 1, []], 
 #             [2**24+1, 2**32, 2**16+1, 2**24, 1, []]"
 level = [
-    [0, 2**32, 0, 2**32, 1, 
-        [
-            
-        ]
-    ]
+    [0, 2**28-1, 0, 2**28-1, 1, []],
+    [0, 2**28-1, 2**28, 2**32-1, 1, []],
+    [2**28, 2**32-1, 0, 2**28-1, 1, []], 
 ]
-def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 8, y_per_len = 8):
+def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 2, y_per_len = 4):
     x_length = x_end - x_start+1  # x 范围的长度
     y_length = y_end - y_start+1  # y 范围的长度
     x_interval = x_length // x_per_len  # x 范围每个区域的长度
@@ -33,16 +32,28 @@ def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 8, y_per_len = 8):
         y_interval = y_length
     # print(x_interval, y_interval, x_per_len, y_per_len)
     regions = []  # 存储划分后的区域坐标
+    x, xe, y, ye = 0, 0, 0, 0
     for i in range(x_per_len):
         for j in range(y_per_len):
             x = x_start + i * x_interval  # 区域左上角 x 坐标
-            xe = x+x_interval
+            xe = x+x_interval-1
             y = y_start + j * y_interval  # 区域左上角 y 坐标
-            ye = y+y_interval
+            ye = y+y_interval-1
             regions.append([x, xe, y, ye, 1, []])
+            if (j == y_per_len-1 and ye < y_end):
+                regions.append([x, xe, ye+1, y_end, 1, []])
+        if (i == x_per_len-1 and xe < x_end):
+            for j in range(y_per_len):
+                y = y_start + j * y_interval
+                ye = y+y_interval-1
+                regions.append([xe+1, x_end, y, ye, 1, []])
+                if (j == y_per_len-1 and ye < y_end):
+                    regions.append([xe+1, x_end, ye+1, y_end, 1, []])
     return regions
+# print("\n".join(str(item) for item in divideRegion(0, 2, 0, 3, 2, 2)))
+# exit()
 
-level_depth = 1+3
+level_depth = 1+5
 cur = level
 for i in range(level_depth-1):
     tp = []
@@ -51,17 +62,17 @@ for i in range(level_depth-1):
         cur[j][5].extend(nxt)
         tp.extend(nxt)
     cur = tp
-# level[0][5].append([2**24+1, 2**32, 2**24+1, 2**32, 1, []])
-# cur = [level[0][5][-1]]
-# for i in range(level_depth-1):
-#     tp = []
-#     for j in range(len(cur)):
-#         nxt = divideRegion(cur[j][0], cur[j][1], cur[j][2], cur[j][3], 8, 8)
-#         cur[j][5].extend(nxt)
-#         tp.extend(nxt)
-#     cur = tp
+level.append([2**28, 2**32-1, 2**28, 2**32-1, 1, []])
+cur = [level[-1]]
+for i in range(level_depth-1):
+    tp = []
+    for j in range(len(cur)):
+        nxt = divideRegion(cur[j][0], cur[j][1], cur[j][2], cur[j][3], 5, 5)
+        cur[j][5].extend(nxt)
+        tp.extend(nxt)
+    cur = tp
 
-cur = [level[0]]
+cur = level
 for i in range(level_depth):
     tp = []
     print(f"level {i}: {len(cur)}")
@@ -133,14 +144,15 @@ for i in [1, 10, 15, 22][:]:
                         nxt.extend(cur[j][5])
                         if (i == level_depth-1): 
                             total_query_rules += cur[j][4]
-                        dk = str(i)+" "+str(j)
-                        if (dk not in hit_map):
-                            hit_map[dk] = [1, cur[j][4]]
-                        else:
-                            hit_map[dk][0] += 1
+                            dk = str(i)+" "+str(j)
+                            qrange = [IPv4Address(cur[j][0]), IPv4Address(cur[j][1]), IPv4Address(cur[j][2]), IPv4Address(cur[j][3])]
+                            if (dk not in hit_map):
+                                hit_map[dk] = [1, cur[j][4], [str(ip) for ip in qrange]]
+                            else:
+                                hit_map[dk][0] += 1
                         break
                 cur = nxt
-    # print(sorted(hit_map.items(), key=lambda x: -x[1][0]*x[1][1])[:10])
+    print("\n".join(str(item) for item in sorted(hit_map.items(), key=lambda x: -x[1][0]*x[1][1])[:10]))
     print(f"total_query_rules={total_query_rules}({total_query_rules/total_packets})")
 
     
