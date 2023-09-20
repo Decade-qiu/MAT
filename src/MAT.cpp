@@ -34,7 +34,7 @@ struct MAT_DATA_STRUCTURE {
     int rule_num;
     int packet_num;
     int zero_rule_num;
-    int loops, hash;
+    int loops, hash, query_rules;
     std::unordered_set<struct trie_node*> Ec;
 } data;
 #define seed            data.seed
@@ -49,6 +49,7 @@ struct MAT_DATA_STRUCTURE {
 #define packet_num      data.packet_num
 #define loops           data.loops
 #define hash            data.hash
+#define query_rules     data.query_rules
 struct trie_node* root;
 
 inline void init_tree_node(struct trie_node* node, struct ip_rule* rule){
@@ -494,6 +495,7 @@ inline int value_match(const struct packet* pkt, struct ip_value* value){
 }
 
 inline struct ip_value* zero_rule_query(const struct packet* pkt){
+    query_rules += zero_rule_num;
     int i = 0, res = -1, max_pri = MIN_PRIORITY;
     for (i = 0;i < zero_rule_num;++i){
         if (value_match(pkt, &Zc[i].value)){
@@ -515,6 +517,7 @@ inline struct ip_value* _oracle(const struct packet* pkt, struct trie_node* inpu
     while (i < n){
         trie_node* child = cur->childs[i];
         if (child->key->value == (src & cmask)){
+            query_rules += 1;
             if (child->value->action != -1 && value_match(pkt, child->value)){
                 if (child->value->priority > max_pri){
                     res = child->value;
@@ -1045,39 +1048,40 @@ void read_data_set(std::string rule_file, std::string packet_file){
 
 void query_packets(){
     // uniform_shaflle(packet_set, packet_num);
-
-    printf("Start query packets.\n");
     double run_time = 0;
     int i = 0, error_match = 0;
     clock_t start, end;
+
+    // printf("Start query packets.\n");
+    // for (i = 0; i < packet_num; ++i){
+    //     struct packet *p = &packet_set[i];
+    //     start = clock();
+    //     int rule_id = query(p);
+    //     end = clock();
+    //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
+    //     if (rule_id != packet_set[i].id){
+    //         error_match++;
+    //         // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
+    //     }   
+    // }
+    // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+    // printf("loops %.2f, hash %.2f\n", loops*1.0/packet_num, hash*1.0/packet_num);
+
+    printf("Start query packets.(only Oracle)\n");
+    run_time = 0;
+    i = 0, error_match = 0;
     for (i = 0; i < packet_num; ++i){
-        struct packet *p = &packet_set[i];
         start = clock();
-        int rule_id = query(p);
+        int rule_id = oracle(&packet_set[i]);
         end = clock();
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (rule_id != packet_set[i].id){
             error_match++;
-            // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
-        }   
+            // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
+        }
     }
     printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
-    printf("loops %.2f, hash %.2f\n", loops*1.0/packet_num, hash*1.0/packet_num);
-
-    // printf("Start query packets.(only Oracle)\n");
-    // run_time = 0;
-    // i = 0, error_match = 0;
-    // for (i = 0; i < packet_num; ++i){
-    //     clock_t start = clock();
-    //     int rule_id = oracle(&packet_set[i]);
-    //     clock_t end = clock();
-    //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
-    //     if (rule_id != packet_set[i].id){
-    //         error_match++;
-    //         // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
-    //     }
-    // }
-    // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+    printf("total_query_rules=%d(%.6f)\n", query_rules, query_rules*1.0/packet_num);
 }
 
 void insert_rule(){
