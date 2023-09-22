@@ -19,7 +19,7 @@ level = [
     [0, 2**28-1, 2**28, 2**32-1, 1, []],
     [2**28, 2**32-1, 0, 2**28-1, 1, []], 
 ]
-def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 2, y_per_len = 4):
+def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 8, y_per_len = 8):
     x_length = x_end - x_start+1  # x 范围的长度
     y_length = y_end - y_start+1  # y 范围的长度
     x_interval = x_length // x_per_len  # x 范围每个区域的长度
@@ -53,7 +53,7 @@ def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 2, y_per_len = 4):
 # print("\n".join(str(item) for item in divideRegion(0, 2, 0, 3, 2, 2)))
 # exit()
 
-level_depth = 1+5
+level_depth = 1+4
 cur = level
 for i in range(level_depth-1):
     tp = []
@@ -67,7 +67,7 @@ cur = [level[-1]]
 for i in range(level_depth-1):
     tp = []
     for j in range(len(cur)):
-        nxt = divideRegion(cur[j][0], cur[j][1], cur[j][2], cur[j][3], 5, 5)
+        nxt = divideRegion(cur[j][0], cur[j][1], cur[j][2], cur[j][3], 4, 4)
         cur[j][5].extend(nxt)
         tp.extend(nxt)
     cur = tp
@@ -93,10 +93,10 @@ for i in [1, 10, 15, 22][:]:
             rule_set.append(line)
             tp = line.split()
             src_key, src_mask = map(int, tp[0].split('/'))
-            assert src_key == src_key & src_mask
+            assert src_key == (src_key & src_mask)
             src_key &= src_mask
             dst_key, dst_mask = map(int, tp[1].split('/'))
-            assert dst_key == dst_key & dst_mask
+            assert dst_key == (dst_key & dst_mask)
             dst_key &= dst_mask
             src_start, src_end = src_key, src_key + ((1<<32)-1-src_mask)
             dst_start, dst_end = dst_key, dst_key + ((1<<32)-1-dst_mask)
@@ -108,7 +108,7 @@ for i in [1, 10, 15, 22][:]:
                         continue
                     cur[j][4] += 1
                     nxt.extend(cur[j][5])
-                cur = nxt
+                cur = nxt   
     # print level trie structure
     cur = level
     for i in range(level_depth):
