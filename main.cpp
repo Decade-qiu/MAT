@@ -18,14 +18,17 @@ int main(){
         std::string f_size = std::to_string(scale)+"k";
         read_data_set(x+f_size, y+f_size);
 
-        init_MAT();
+        // init_MAT();
+        init_opti_trie_struct();
         
         insert_rule();
 
-        print_info(scale);
+        // print_info(scale);
+        print_trie_info();
 
         query_packets(); 
 
-        delete_MAT();
+        // delete_MAT();
+        delete_opti_trie_struct();
     }
 }

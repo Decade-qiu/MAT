@@ -6,8 +6,4 @@ CMakeFiles/MAT.dir/main.cpp.o: ../main.cpp
 
 CMakeFiles/MAT.dir/src/MAT.cpp.o: ../src/MAT.cpp
 CMakeFiles/MAT.dir/src/MAT.cpp.o: ../src/MAT.h
-CMakeFiles/MAT.dir/src/MAT.cpp.o: ../utils/murmurhash.h
-
-CMakeFiles/MAT.dir/utils/murmurhash.cpp.o: ../utils/murmurhash.cpp
-CMakeFiles/MAT.dir/utils/murmurhash.cpp.o: ../utils/murmurhash.h
 

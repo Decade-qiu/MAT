@@ -52,6 +52,10 @@ struct MAT_DATA_STRUCTURE {
 #define query_rules     data.query_rules
 struct trie_node* root;
 
+struct opti_trie_node* opti_root;
+int level_depth = 1+3;
+double true_query_time = 0;
+
 inline void init_tree_node(struct trie_node* node, struct ip_rule* rule){
     node->key = &rule->key;
     node->value = &rule->value;
@@ -656,6 +660,85 @@ int query(const struct packet* pkt){
     return res == nullptr ? 0 : res->id;
 }
 
+int opti_trie_insert(struct ip_rule* rule){
+    unsigned int src_st = rule->key.value;
+    unsigned int src_ed = src_st + (UINT32_MAX - rule->key.mask);
+    unsigned int dst_st = rule->value.field[0].value;
+    unsigned int dst_ed = dst_st + (UINT32_MAX - rule->value.field[0].mask);
+    std::vector<struct opti_trie_node*> cur_children;
+    for (int i = 0;i < opti_root->children.size();++i){
+        struct opti_trie_node* cur_child = opti_root->children[i];
+        if (src_st > cur_child->src_end ||
+            src_ed < cur_child->src_start ||
+            dst_st > cur_child->dst_end ||
+            dst_ed < cur_child->dst_start){
+            continue;
+        }
+        cur_children.push_back(cur_child);
+    }
+    for (int i = 1;i < level_depth;i++){
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            if (cur_child->children.size() == 0){
+                nxt_children.push_back(cur_child);
+                continue;
+            }
+            for (int k = 0;k < cur_child->children.size();++k){
+                struct opti_trie_node* nxt_child = cur_child->children[k];
+                if (src_st > nxt_child->src_end ||
+                    src_ed < nxt_child->src_start ||
+                    dst_st > nxt_child->dst_end ||
+                    dst_ed < nxt_child->dst_start){
+                    continue;
+                }
+                nxt_children.push_back(nxt_child);
+            }
+        }
+        cur_children = nxt_children;
+    }
+    for (int i = 0;i < cur_children.size();++i){
+        struct opti_trie_node* cur_child = cur_children[i];
+        cur_child->rules.push_back(rule);
+    }
+}
+
+int opti_trie_query(const struct packet* pkt){
+    unsigned int src = pkt->src, dst = pkt->dst;
+    struct opti_trie_node* cur = opti_root;
+    for (int i = 0;i < level_depth;i++){
+        for (int j = 0;j < cur->children.size();++j){
+            struct opti_trie_node* cur_child = cur->children[j];
+            if (src >= cur_child->src_start && src <= cur_child->src_end &&
+                dst >= cur_child->dst_start && dst <= cur_child->dst_end){
+                cur = cur_child;
+                break;
+            }
+        }
+    }
+    ip_value* res = nullptr;
+    int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
+    clock_t start, end;
+    query_rules += cur->rules.size();
+    start = clock();
+    for (int i = 0;i < cur->rules.size();++i){
+        struct ip_rule* rule = cur->rules[i];
+        if ((src & rule->key.mask) == rule->key.value && 
+            match(pkt->dst, &rule->value.field[0]) &&
+            match(pkt->proto, &rule->value.field[1]) &&
+            match(pkt->sport, &rule->value.field[2]) &&
+            match(pkt->dport, &rule->value.field[3])){
+            if (rule->value.priority > max_pri){
+                res = &rule->value;
+                max_pri = rule->value.priority;
+            }
+        }
+    }
+    end = clock();
+    true_query_time += (double)(end-start);
+    return res == nullptr ? 0 : res->id;
+}
+
 int oracle(const struct packet* pkt){
     ip_value* res = zero_rule_query(pkt);
     int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
@@ -933,6 +1016,23 @@ void print_info(int scale){
     // print_Sc();
 }
 
+void print_trie_info(){
+    struct opti_trie_node* cur = opti_root;
+    std::vector<struct opti_trie_node*> cur_children = cur->children;
+    for (int i = 0;i < level_depth;i++){
+        printf("level %d: %d\n", i, cur_children.size());
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            for (int k = 0;k < cur_child->children.size();++k){
+                struct opti_trie_node* nxt_child = cur_child->children[k];
+                nxt_children.push_back(nxt_child);
+            }
+        }
+        cur_children = nxt_children;
+    }
+}
+
 std::vector<std::string> split(const std::string& str, const std::string& pattern) {
     std::regex re(pattern);
     std::sregex_token_iterator it(str.begin(), str.end(), re, -1);
@@ -1051,6 +1151,7 @@ void query_packets(){
     double run_time = 0;
     int i = 0, error_match = 0;
     clock_t start, end;
+    true_query_time = 0;
 
     // printf("Start query packets.\n");
     // for (i = 0; i < packet_num; ++i){
@@ -1072,27 +1173,120 @@ void query_packets(){
     i = 0, error_match = 0;
     for (i = 0; i < packet_num; ++i){
         start = clock();
-        int rule_id = oracle(&packet_set[i]);
+        int rule_id = opti_trie_query(&packet_set[i]);
+        // int rule_id = query(&packet_set[i]);
         end = clock();
-        run_time += (double)(end - start) / CLOCKS_PER_SEC;
+        run_time += (double)(end - start);
         if (rule_id != packet_set[i].id){
             error_match++;
-            // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
+            // printf("%d Error match: %d (%d)\n", i, rule_id, packet_set[i].id);
         }
     }
-    printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+    printf("Query %d packets, %d error match, thoughout %.6f, match_thought %.6f!\n", packet_num, error_match, packet_num*1000000.0 / run_time, packet_num*1000000.0 / true_query_time);
     printf("total_query_rules=%d(%.6f)\n", query_rules, query_rules*1.0/packet_num);
+}
+
+std::vector<struct opti_trie_node*> divideRegion(unsigned int x_start, unsigned int x_end, unsigned int y_start, unsigned int y_end, unsigned int x_per_len = 4, unsigned int y_per_len = 4) {
+    unsigned int x_length = x_end - x_start + 1;
+    unsigned int y_length = y_end - y_start + 1;
+    unsigned int x_interval = x_length / x_per_len;
+    unsigned int y_interval = y_length / y_per_len;
+    if (x_interval == 0) {
+        x_per_len = 1;
+        x_interval = x_length;
+    }
+    if (y_interval == 0) {
+        y_per_len = 1;
+        y_interval = y_length;
+    }
+    std::vector<struct opti_trie_node*> regions;
+    unsigned int x, xe, y, ye;
+    for (unsigned int i = 0; i < x_per_len; i++) {
+        for (unsigned int j = 0; j < y_per_len; j++) {
+            x = x_start + i * x_interval;
+            xe = x + x_interval - 1;
+            y = y_start + j * y_interval;
+            ye = y + y_interval - 1;
+            regions.push_back(new opti_trie_node(x, xe, y, ye));
+            if (j == y_per_len - 1 && ye < y_end) {
+                regions.push_back(new opti_trie_node(x, xe, ye + 1, y_end));
+            }
+        }
+        if (i == x_per_len - 1 && xe < x_end) {
+            for (unsigned int j = 0; j < y_per_len; j++) {
+                y = y_start + j * y_interval;
+                ye = y + y_interval - 1;
+                regions.push_back(new opti_trie_node(xe + 1, x_end, y, ye));
+                if (j == y_per_len - 1 && ye < y_end) {
+                    regions.push_back(new opti_trie_node(xe + 1, x_end, ye + 1, y_end));
+                }
+            }
+        }
+    }
+    return regions;
+}
+
+int init_opti_trie_struct(){
+    opti_root = new opti_trie_node(0, UINT32_MAX, 0, UINT32_MAX);
+    opti_root->children = {
+        new opti_trie_node(0, (1<<28)-1, 0, (1<<28)-1),
+        new opti_trie_node(0, (1<<28)-1, (1<<28), UINT32_MAX),
+        new opti_trie_node((1<<28), UINT32_MAX, 0, (1<<28)-1)
+    };
+    struct opti_trie_node* cur = opti_root;
+    std::vector<struct opti_trie_node*> cur_children = cur->children;
+    for (int i = 1;i < level_depth-2;i++){
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            std::vector<struct opti_trie_node*> regions = divideRegion(cur_child->src_start, cur_child->src_end, cur_child->dst_start, cur_child->dst_end);
+            for (int k = 0;k < regions.size();++k){
+                cur_child->children.push_back(regions[k]);
+                nxt_children.push_back(regions[k]);
+            }
+        }
+        cur_children = nxt_children;
+    }
+    opti_root->children.push_back(new opti_trie_node((1<<28), UINT32_MAX, (1<<28), UINT32_MAX));
+    cur_children = {opti_root->children[opti_root->children.size()-1]};
+    for (int i = 1;i < level_depth;i++){
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            std::vector<struct opti_trie_node*> regions = divideRegion(cur_child->src_start, cur_child->src_end, cur_child->dst_start, cur_child->dst_end);
+            for (int k = 0;k < regions.size();++k){
+                cur_child->children.push_back(regions[k]);
+                nxt_children.push_back(regions[k]);
+            }
+        }
+        cur_children = nxt_children;
+    }
+}
+
+void delete_opti_trie(opti_trie_node* root){
+    if (root == nullptr) return;
+    for (int i = 0;i < root->children.size();++i){
+        delete_opti_trie(root->children[i]);
+    }
+    root->children.clear();
+    root->rules.clear();
+    delete root;
+}
+
+void delete_opti_trie_struct(){
+    delete_opti_trie(opti_root);
 }
 
 void insert_rule(){
     uniform_shaflle(rule_set, rule_num);
-
-    printf("Start insert rules.\n");
+    init_opti_trie_struct();
     double run_time = 0;
     int i = 0, sucess_count = 0; 
+    printf("Start insert rules.\n");
     for (i = 0; i < rule_num; ++i){
         clock_t start = clock();
-        int st = insert(&rule_set[i]);
+        // int st = insert(&rule_set[i]);
+        int st = opti_trie_insert(&rule_set[i]);
         clock_t end = clock();
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (st == 0) sucess_count++; 

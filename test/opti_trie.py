@@ -2,24 +2,13 @@
 from collections import defaultdict, Counter
 import matplotlib.pyplot as plt
 from ipaddress import *
-# aaa = "[0, 0, 0, 0, 1, []], 
-#             [0, 0, 1, 2**32, 1, []], 
-#             [1, 2**32, 0, 0, 1, []], 
-#             [1, 2**8, 1, 2**8, 1, []], 
-#             [1, 2**8, 2**8+1, 2**32, 1, []], 
-#             [2**8+1, 2**32, 1, 2**8, 1, []],
-#             [2**8+1, 2**16, 2**8+1, 2**16, 1, []], 
-#             [2**8+1, 2**16, 2**16+1, 2**32, 1, []], 
-#             [2**16+1, 2**32, 2**8+1, 2**16, 1, []],
-#             [2**16+1, 2**24, 2**16+1, 2**24, 1, []], 
-#             [2**16+1, 2**24, 2**24+1, 2**32, 1, []], 
-#             [2**24+1, 2**32, 2**16+1, 2**24, 1, []]"
+
 level = [
     [0, 2**28-1, 0, 2**28-1, 1, []],
     [0, 2**28-1, 2**28, 2**32-1, 1, []],
     [2**28, 2**32-1, 0, 2**28-1, 1, []], 
 ]
-def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 8, y_per_len = 8):
+def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 4, y_per_len = 4):
     x_length = x_end - x_start+1  # x 范围的长度
     y_length = y_end - y_start+1  # y 范围的长度
     x_interval = x_length // x_per_len  # x 范围每个区域的长度
@@ -53,7 +42,8 @@ def divideRegion(x_start, x_end, y_start, y_end, x_per_len = 8, y_per_len = 8):
 # print("\n".join(str(item) for item in divideRegion(0, 2, 0, 3, 2, 2)))
 # exit()
 
-level_depth = 1+4
+level_depth = 1+3
+level = [[2**28, 2**32-1, 2**28, 2**32-1, 1, []]]
 cur = level
 for i in range(level_depth-1):
     tp = []
@@ -62,15 +52,21 @@ for i in range(level_depth-1):
         cur[j][5].extend(nxt)
         tp.extend(nxt)
     cur = tp
-level.append([2**28, 2**32-1, 2**28, 2**32-1, 1, []])
-cur = [level[-1]]
+level_tp = [
+    [0, 2**28-1, 0, 2**28-1, 1, []],
+    [0, 2**28-1, 2**28, 2**32-1, 1, []],
+    [2**28, 2**32-1, 0, 2**28-1, 1, []]
+]
+cur = level_tp
 for i in range(level_depth-1):
     tp = []
     for j in range(len(cur)):
-        nxt = divideRegion(cur[j][0], cur[j][1], cur[j][2], cur[j][3], 4, 4)
+        nxt = divideRegion(cur[j][0], cur[j][1], cur[j][2], cur[j][3])
         cur[j][5].extend(nxt)
         tp.extend(nxt)
     cur = tp
+
+level.extend(level_tp)
 
 cur = level
 for i in range(level_depth):
@@ -100,6 +96,7 @@ for i in [1, 10, 15, 22][:]:
             dst_key &= dst_mask
             src_start, src_end = src_key, src_key + ((1<<32)-1-src_mask)
             dst_start, dst_end = dst_key, dst_key + ((1<<32)-1-dst_mask)
+            # if (src_start < (1<<28) or dst_start < (1<<28)): continue
             cur = level
             for i in range(level_depth):
                 nxt = []
@@ -116,13 +113,12 @@ for i in [1, 10, 15, 22][:]:
         nxt = []
         for j in range(len(cur)):
             nxt.extend(cur[j][5])
-            if (cur[j][4] != 0):
-                if cur[j][4] > max_b:
-                    max_b = cur[j][4]
-                    dx, dy = i, j
-        #         print(f"{'L' if cur[j][4]==0 else ''}{cur[j][4]}", end=" ")
+            if cur[j][4] > max_b:
+                max_b = cur[j][4]
+                dx, dy = i, j
+        #     print(f"{i}-{j}:{cur[j][4]}", end=" ")
         # print()
-        print(f"level {i}: num={len(cur)} max_buckets={max_b}({cur[dy][:-1]})")
+        # print(f"level {i}: num={len(cur)} max_buckets={max_b}({cur[dy][:-1]})")
         cur = nxt
     # continue
     # packet query
@@ -136,6 +132,7 @@ for i in [1, 10, 15, 22][:]:
             line = line.strip()
             tp = line.split()
             src, dst = map(int, tp[1:3])
+            # if (src < (1<<28) or dst < (1<<28)): continue
             cur = level
             for i in range(level_depth):
                 nxt = []
@@ -152,7 +149,7 @@ for i in [1, 10, 15, 22][:]:
                                 hit_map[dk][0] += 1
                         break
                 cur = nxt
-    print("\n".join(str(item) for item in sorted(hit_map.items(), key=lambda x: -x[1][0]*x[1][1])[:10]))
+    # print("\n".join(str(item) for item in sorted(hit_map.items(), key=lambda x: -x[1][0]*x[1][1])[:10]))
     print(f"total_query_rules={total_query_rules}({total_query_rules/total_packets})")
 
     

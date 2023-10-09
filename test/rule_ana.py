@@ -1,6 +1,61 @@
 # # -*- coding: utf-8 -*-
 from collections import defaultdict, Counter
 import matplotlib.pyplot as plt
+from ipaddress import *
+import os
+
+current_path = os.path.dirname(os.path.abspath(__file__))
+parent_path = os.path.dirname(current_path)
+
+for i in [1, 10 ,22 ,55]:
+    src_set, dst_set, src_dst_set = [], [], []
+    src_mask_diff, dst_mask_diff = defaultdict(set), defaultdict(set)
+    src_mask_dic, dst_mask_dic = defaultdict(int), defaultdict(int)
+    src_dst_dic = defaultdict(int)
+    src_dst_cardinality = set()
+    scale = i
+    zero_ex = 0
+    print(f"============== scale:{scale}k ==============")
+    with open('../data/rules_{}k'.format(scale), 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            tp = line.split()
+            src_dst_dic[tp[0]+" "+tp[1]] += 1
+            src_dst_cardinality.add(tp[0]+" "+tp[1])
+            src, smask = map(lambda x : int(x), tp[0].split('/'))
+            dst, dmask = map(lambda x : int(x), tp[1].split('/'))
+            assert src == (src & smask)
+            assert dst == (dst & dmask)
+            if (smask == (1<<32)-1 and dmask == (1<<32)-1): zero_ex += 1
+            # if (src == 0 or dst == 0): continue
+            src_mask_dic[str(IPv4Address(smask))] += 1
+            dst_mask_dic[str(IPv4Address(dmask))] += 1
+            dst_mask_dic[dmask] += 1
+            src_mask_diff[str(IPv4Address(src))].add(str(IPv4Address(smask)))
+            dst_mask_diff[str(IPv4Address(dst))].add(str(IPv4Address(dmask)))
+            if (smask != -10):
+                src_set.append([src, smask, str(IPv4Address(src)), str(IPv4Address(smask))])
+            if (dmask != -10):    
+                dst_set.append([dst, dmask, str(IPv4Address(dst)), str(IPv4Address(dmask))])
+            if (smask != -10 and dmask != -10):
+                src_dst_set.append([src, smask, dst, dmask, str(IPv4Address(src)), str(IPv4Address(smask)), str(IPv4Address(dst)), str(IPv4Address(dmask))])
+    print([i[1] for i in sorted(src_dst_dic.items(), key=lambda x: -x[1])[:10]])
+    print(len(src_dst_cardinality))
+    # src_set.sort(key=lambda x: x[0])
+    # dst_set.sort(key=lambda x: x[0])
+    # print(sorted(src_mask_dic.items(), key=lambda x: -x[1])[:5])
+    # print(sorted(dst_mask_dic.items(), key=lambda x: -x[1])[:5])
+    # print(len(sorted(src_mask_diff.items(), key=lambda x: -len(x[1]))[0][1]))
+    # print(len(sorted(dst_mask_diff.items(), key=lambda x: -len(x[1]))[0][1]))
+    # max_v = 1 << 28
+    # cnt, cnt1 = 0, 0
+    # for i in range(len(src_dst_set)):
+    #     if (src_dst_set[i][0] < max_v or src_dst_set[i][2] < max_v):
+    #         cnt += 1
+    #     else:
+    #         if ((1<<32)-1-src_dst_set[i][1] == (1<<8)-1 or (1<<32)-1-src_dst_set[i][3] == (1<<8)-1):
+    #             cnt1 += 1
+    # print(cnt, cnt1, zero_ex)
 
 # for i in [1, 10 ,22 ,55]:
 #     rule_set = []
@@ -78,66 +133,66 @@ import matplotlib.pyplot as plt
 #     print("sport: ", sexact_cnt, srange_cnt, sfull_cnt, srange_ex)
 #     print("dport: ", dexact_cnt, drange_cnt, dfull_cnt, drange_ex)
 
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-total_Z = [0 for i in range(0, 2**32+1)]
-for i in [1, 10, 22, 55]:
-    scale = i
-    fig = plt.figure()
-    ax = fig.gca(projection='3d') 
-    src_p_set = set()
-    dst_p_set = set()
-    X = []
-    Y = []
-    for i in range(0, 33):
-        for j in range(0, 33):
-            X.append(i)
-            Y.append(j)
-    Z = [0 for i in range(0, 33*33)]
-    total_rule_num = 0
-    with open('../data/rules_{}k'.format(scale), 'r') as file:
-        lines = file.readlines()
-        total_rule_num = len(lines)
-        for line in lines:
-            cur = line.strip().split()
-            src_plen = bin(int(cur[0].split('/')[1])).count('1')
-            dst_plen = bin(int(cur[1].split('/')[1])).count('1')
-            Z[src_plen*33+dst_plen] += 1
-            src_p_set.add(src_plen)
-            dst_p_set.add(dst_plen)
-    height = np.zeros_like(Z) 
-    width = depth = 0.5 
-    ax.bar3d(X, Y, height, width, depth, Z, shade=True)
-    ax.set_xticks([0, 8, 16, 24, 32])  
-    ax.set_yticks([0, 8, 16, 24, 32])  
-    ax.set_xlabel('src_prefix_length')
-    ax.set_ylabel('dst_prefix_length')
-    ax.set_zlabel('rule_num')
-    plt.savefig("./pic/rule_{}k_prefix.png".format(scale))
-    # print(len(src_p_set), len(dst_p_set))
-    cnt = []
-    for i in range(0, 33):
-        for j in range(0, 33):
-            cnt.append([i, j, Z[i*33+j]])
-            total_Z[i*33+j] += Z[i*33+j]/total_rule_num
-    cnt.sort(key=lambda x: x[2], reverse=True)
-    sum_v, sum_pr = 0, 0.0
-    for i in range(0, 10):
-        if (cnt[i][2] == 0): break
-        sum_v += cnt[i][2]
-        sum_pr += cnt[i][2]/total_rule_num
-        # print(f"({cnt[i][0]}, {cnt[i][1]}) {cnt[i][2]} {cnt[i][2]/total_rule_num:.7%}")
-        print(f"({cnt[i][0]}, {cnt[i][1]})", end=" ")
-    print()
-# total_cnt = []
-# for i in range(0, 33):
-#     for j in range(0, 33):
-#         total_cnt.append([i, j, total_Z[i*33+j]])
-# total_cnt.sort(key=lambda x: x[2], reverse=True)
-# for i in range(0, 10):
-#     print(f"({total_cnt[i][0]}, {total_cnt[i][1]})", end=" ")
-# print()
+# import numpy as np
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
+# total_Z = [0 for i in range(0, 2**32+1)]
+# for i in [1, 10, 22, 55]:
+#     scale = i
+#     fig = plt.figure()
+#     ax = fig.gca(projection='3d') 
+#     src_p_set = set()
+#     dst_p_set = set()
+#     X = []
+#     Y = []
+#     for i in range(0, 33):
+#         for j in range(0, 33):
+#             X.append(i)
+#             Y.append(j)
+#     Z = [0 for i in range(0, 33*33)]
+#     total_rule_num = 0
+#     with open('../data/rules_{}k'.format(scale), 'r') as file:
+#         lines = file.readlines()
+#         total_rule_num = len(lines)
+#         for line in lines:
+#             cur = line.strip().split()
+#             src_plen = bin(int(cur[0].split('/')[1])).count('1')
+#             dst_plen = bin(int(cur[1].split('/')[1])).count('1')
+#             Z[src_plen*33+dst_plen] += 1
+#             src_p_set.add(src_plen)
+#             dst_p_set.add(dst_plen)
+#     height = np.zeros_like(Z) 
+#     width = depth = 0.5 
+#     ax.bar3d(X, Y, height, width, depth, Z, shade=True)
+#     ax.set_xticks([0, 8, 16, 24, 32])  
+#     ax.set_yticks([0, 8, 16, 24, 32])  
+#     ax.set_xlabel('src_prefix_length')
+#     ax.set_ylabel('dst_prefix_length')
+#     ax.set_zlabel('rule_num')
+#     plt.savefig("./pic/rule_{}k_prefix.png".format(scale))
+#     # print(len(src_p_set), len(dst_p_set))
+#     cnt = []
+#     for i in range(0, 33):
+#         for j in range(0, 33):
+#             cnt.append([i, j, Z[i*33+j]])
+#             total_Z[i*33+j] += Z[i*33+j]/total_rule_num
+#     cnt.sort(key=lambda x: x[2], reverse=True)
+#     sum_v, sum_pr = 0, 0.0
+#     for i in range(0, 10):
+#         if (cnt[i][2] == 0): break
+#         sum_v += cnt[i][2]
+#         sum_pr += cnt[i][2]/total_rule_num
+#         # print(f"({cnt[i][0]}, {cnt[i][1]}) {cnt[i][2]} {cnt[i][2]/total_rule_num:.7%}")
+#         print(f"({cnt[i][0]}, {cnt[i][1]})", end=" ")
+#     print()
+# # total_cnt = []
+# # for i in range(0, 33):
+# #     for j in range(0, 33):
+# #         total_cnt.append([i, j, total_Z[i*33+j]])
+# # total_cnt.sort(key=lambda x: x[2], reverse=True)
+# # for i in range(0, 10):
+# #     print(f"({total_cnt[i][0]}, {total_cnt[i][1]})", end=" ")
+# # print()
 
 # src_st = [8, 12, 16, 18, 20, 22, 24, 26, 28, 30, 32]
 # src_st = [8, 16, 24, 28, 32]
@@ -216,3 +271,26 @@ for i in [1, 10, 22, 55]:
 #     # for d in dst_cnt:
 #     #     print(f"({d[0]},{d[1]})", end=" ")
 #     # print()
+def get_rules(scale):
+    rules = []
+    with open(os.path.join(parent_path, f"data/rules_{scale}k"), "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            tp = line.strip().split()
+            src, smask = map(int, tp[0].split('/'))
+            dst, dmask = map(int, tp[1].split('/'))
+            proto = int(tp[2])
+            sport_start, sport_end = map(int, tp[3].split(':'))
+            dport_start, dport_end = map(int, tp[4].split(':'))
+            f1, f2, f3 = int(tp[5]), int(tp[6]), int(tp[7])
+            match_rule_id = int(tp[8])
+            rules.append((src, smask, dst, dmask, proto, sport_start, sport_end, dport_start, dport_end, f1, f2, f3, match_rule_id))
+    return rules
+
+def show_field_cardinality(rules):
+    
+
+if __name__ == "__main__":
+    for i in [1, 10, 22, 55]:
+        rules = get_rules(i)
+        show_field_cardinality(rules)

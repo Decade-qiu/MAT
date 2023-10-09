@@ -3,6 +3,7 @@
 
 #include <string>
 #include <immintrin.h>
+#include <vector>
 
 #define MAX_RULE 60000
 #define MAX_PACKET 100000
@@ -70,6 +71,16 @@ struct trie_node{
     int depth;
 };
 
+struct opti_trie_node{
+    unsigned int src_start, src_end;
+    unsigned int dst_start, dst_end;
+    std::vector<struct ip_rule*> rules;
+    std::vector<struct opti_trie_node*> children;
+    opti_trie_node(unsigned int src_start_val, unsigned int src_end_val, unsigned int dst_start_val, unsigned int dst_end_val)
+        : src_start(src_start_val), src_end(src_end_val), dst_start(dst_start_val), dst_end(dst_end_val) {
+    }
+};
+
 struct simd{
     __m256i key[2], mask[2];
     trie_node* buckets[MAX_BUCKET_NUM];
@@ -95,15 +106,19 @@ struct packet{
 // };
 
 void print_info(int scale);
+void print_trie_info();
 
 int init_MAT();
+int init_opti_trie_struct();
 
 int delete_MAT();
+void delete_opti_trie_struct();
 
 void read_data_set(std::string rule_file, std::string packet_file);
 
 void query_packets();
 
 void insert_rule();
+
 
 #endif
