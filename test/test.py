@@ -1,8 +1,22 @@
-from ipaddress import *
 
-print(str(IPv4Address(4000873412)), str(IPv4Address(4294967295)))
-print(str(IPv4Address(1881463335)), str(IPv4Address(429496729)))
-print(str(IPv4Address(4000873422)), str(IPv4Address(4294967295)))
-print(str(IPv4Address(1881463808)), str(IPv4Address(4294966272)))
-print(str(IPv4Address(4000873412)), str(IPv4Address(1881463335)))
+def splitRange(start, end, L):
+    res = []
+    mask = ((1 << 16)-1) ^ ((1 << L)-1)
+    print(bin(mask))
+    while 1:
+        if start&mask == end&mask:
+            res.append((start, end))
+            break
+        else:
+            res.append((start, start|((1<<L)-1)))
+            start = start|((1<<L)-1)
+            start += 1
+    return res
 
+start = 0xBF14
+end = 0xBF22
+L = 4
+print(f"{bin(start)} ~ {bin(end)}")
+result = splitRange(start, end, L)
+for (subStart, subEnd) in result:
+    print(f"{bin(subStart)} ~ {bin(subEnd)}")

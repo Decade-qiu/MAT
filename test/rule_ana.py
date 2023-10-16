@@ -1,296 +1,435 @@
 # # -*- coding: utf-8 -*-
 from collections import defaultdict, Counter
-import matplotlib.pyplot as plt
 from ipaddress import *
-import os
+from matplotlib import colors
+from mpl_toolkits.mplot3d import Axes3D
+import os, numpy as np, matplotlib.pyplot as plt
+
+# 绘图防止乱码
+plt.rcParams['font.sans-serif']='SimHei'
+plt.rcParams['axes.unicode_minus']=False
+plt.rcParams['ps.useafm'] = True
+plt.rcParams['pdf.fonttype'] = 42
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.dirname(current_path)
 
-for i in [1, 10 ,22 ,55]:
-    src_set, dst_set, src_dst_set = [], [], []
-    src_mask_diff, dst_mask_diff = defaultdict(set), defaultdict(set)
-    src_mask_dic, dst_mask_dic = defaultdict(int), defaultdict(int)
-    src_dst_dic = defaultdict(int)
-    src_dst_cardinality = set()
-    scale = i
-    zero_ex = 0
-    print(f"============== scale:{scale}k ==============")
-    with open('../data/rules_{}k'.format(scale), 'r') as file:
-        lines = file.readlines()
-        for line in lines:
-            tp = line.split()
-            src_dst_dic[tp[0]+" "+tp[1]] += 1
-            src_dst_cardinality.add(tp[0]+" "+tp[1])
-            src, smask = map(lambda x : int(x), tp[0].split('/'))
-            dst, dmask = map(lambda x : int(x), tp[1].split('/'))
+global_total_rules = defaultdict(list)
+rule_scale = [1, 10, 15, 55]
+rule_field = [("src", 0), ("dst", 1), ("protocol", 2), ("sport", 3), ("dport", 4)]
+
+
+def get_prefix(mask):
+    return str(bin(int(mask))[2:].count('1'))
+
+def get_rules():
+    for i in rule_scale:
+        with open(os.path.join(parent_path, f"data/rules_{i}k"), "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                tp = line.strip().split()
+                src, smask = map(int, tp[0].split('/'))
+                dst, dmask = map(int, tp[1].split('/'))
+                assert src == (src & smask)
+                assert dst == (dst & dmask)
+                proto = int(tp[2])
+                sport_start, sport_end = map(int, tp[3].split(':'))
+                dport_start, dport_end = map(int, tp[4].split(':'))
+                f1, f2, f3 = int(tp[5]), int(tp[6]), int(tp[7])
+                match_rule_id = int(tp[8])
+                if (f1 == 1 or f2 == 1 or f3 == 1):
+                    continue
+                global_total_rules[i].append((src, smask, dst, dmask, proto, sport_start, sport_end, dport_start, dport_end, f1, f2, f3, match_rule_id))
+
+def show_field_cardinality():
+    for i in rule_scale:
+        src_set, dst_set, proto_set, sport_set, dport_set = set(), set(), set(), set(), set()
+        print(f"================= scaled {i}k =================")
+        for rule in global_total_rules[i]:
+            src_set.add((rule[0], rule[1]))
+            dst_set.add((rule[2], rule[3]))
+            proto_set.add(rule[4])
+            sport_set.add((rule[5], rule[6]))
+            dport_set.add((rule[7], rule[8]))
+        print(f"src cardinality: {len(src_set)}")
+        print(f"dst cardinality: {len(dst_set)}")
+        print(f"proto cardinality: {len(proto_set)}")
+        print(f"sport cardinality: {len(sport_set)}")
+        print(f"dport cardinality: {len(dport_set)}")
+        print()
+        # break
+
+def show_field_distribution():
+    field_data = [[], [], [], [], []]
+    for scale in rule_scale:
+        rules = global_total_rules[scale]
+        src_cnt, dst_cnt, proto_cnt, sport_cnt, dport_cnt = defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(int)
+        src_mask, dst_mask = defaultdict(set), defaultdict(set)
+        for rule in rules:
+            src_cnt[(rule[0], rule[1])] += 1
+            src_mask[rule[0]].add(rule[1])
+            dst_cnt[(rule[2], rule[3])] += 1
+            dst_mask[rule[2]].add(rule[3])
+            proto_cnt[rule[4]] += 1
+            sport_cnt[(rule[5], rule[6])] += 1
+            dport_cnt[(rule[7], rule[8])] += 1
+        src_cnt = sorted(src_cnt.items(), key=lambda x: -x[1])
+        dst_cnt = sorted(dst_cnt.items(), key=lambda x: -x[1])
+        proto_cnt = sorted(proto_cnt.items(), key=lambda x: -x[1])
+        sport_cnt = sorted(sport_cnt.items(), key=lambda x: -x[1])
+        dport_cnt = sorted(dport_cnt.items(), key=lambda x: -x[1])
+        src_mask = sorted(src_mask.items(), key=lambda x: -len(x[1]))
+        dst_mask = sorted(dst_mask.items(), key=lambda x: -len(x[1]))
+        # 画出分布图
+        field_data[0].append(([i for i in range(len(src_cnt))], [i[1] for i in src_cnt]))
+        field_data[1].append(([i for i in range(len(dst_cnt))], [i[1] for i in dst_cnt]))
+        field_data[2].append(([i for i in range(len(proto_cnt))], [i[1] for i in proto_cnt]))
+        field_data[3].append(([i for i in range(len(sport_cnt))], [i[1] for i in sport_cnt]))
+        field_data[4].append(([i for i in range(len(dport_cnt))], [i[1] for i in dport_cnt]))
+    for field_name, field_id in rule_field:
+        plt.figure()
+        plt.xlabel(field_name)
+        plt.ylabel(f"{field_name}重复出现的次数")
+        for i in range(len(rule_scale)):
+            scale = rule_scale[i]
+            x, y = field_data[field_id][i]
+            plt.plot(x, y, label=f"{scale}k")     
+            # plt.bar(x, y, label=f"{scale}k")
+        plt.legend()
+        plt.savefig(os.path.join(current_path, f"pic/{field_name}_distribution.jpg"), dpi=800)
+
+
+def show_ip_mask_distribution():
+    for i in rule_field[:2]:
+        field_name, field_id = i
+        plt.figure()
+        plt.ylabel(f"{field_name}掩码长度")
+        plt.xlabel(f"rule数量")
+        rules = global_total_rules[rule_scale[-1]]
+        mask_cnt = defaultdict(int)
+        for rule in rules:
+            mask = get_prefix(rule[field_id*2+1])
+            mask_cnt[mask] += 1
+        mask_cnt = sorted(mask_cnt.items(), key=lambda x: x[0])
+        x, y = [i[0] for i in mask_cnt], [i[1] for i in mask_cnt]
+        plt.barh(x, y, label=f"{rule_scale[-1]}k")
+        plt.legend()
+        for i in range(len(x)):
+            plt.text(y[i], x[i], f" {y[i]/len(rules)*100:.1f}%", fontsize=8, ha='left', va='center')
+        y_ticks = [0, 8, 16, 24, 32]
+        plt.yticks(y_ticks, y_ticks)
+        plt.savefig(os.path.join(current_path, f"pic/{field_name}_mask_distribution.jpg"), dpi=800)
+
+
+def show_src_dst_tuple_mask_3D_distribution():
+    scale = rule_scale[-1]
+    fig = plt.figure()
+    ax = fig.gca(projection='3d') 
+    X = []
+    Y = []
+    for i in range(0, 33):
+        for j in range(0, 33):
+            X.append(i)
+            Y.append(j)
+    Z = [0 for i in range(0, 33*33)]
+    for line in global_total_rules[scale]:
+        src_plen = get_prefix(line[1])
+        dst_plen = get_prefix(line[3])
+        Z[src_plen*33+dst_plen] += 1
+    max_count = max(Z[:-1])
+    cmap = plt.cm.get_cmap('coolwarm')
+    height = np.zeros_like(Z) 
+    width = depth = 0.5 
+    ax.bar3d(X, Y, height, width, depth, Z, color=cmap(np.array(Z)/max_count))
+    ax.grid(True)
+    plt.title('Source-Destination Prefix Length Distribution', fontsize=14, fontweight='bold')
+    ax.set_xticks([0, 8, 16, 24, 32])  
+    ax.set_yticks([0, 8, 16, 24, 32])  
+    ax.set_xlabel('src_prefix_len')
+    ax.set_ylabel('dst_prefix_len')
+    ax.set_zlabel('rule_num')
+    ax.view_init(elev=30, azim=-45)
+    # fig.set_size_inches(9, 7)
+    fig.savefig(os.path.join(current_path, f"pic/src_dst_tuple_mask_3D_distribution.jpg"), dpi=800)
+        
+def show_port_distribution():
+    for i in rule_field[3:]:
+        field_name, field_id = i
+        rules = global_total_rules[rule_scale[-1]]
+        range_port, exact_port, all_range = 0, 0, 0
+        sp_range = 0
+        for rule in rules:
+            port_start, port_end = rule[field_id*2-1], rule[field_id*2]
+            if port_start == port_end:
+                exact_port += 1
+            elif port_start==0 and port_end==65535:
+                all_range += 1
+            elif port_start==1024 and port_end==65535:
+                range_port += 1
+            else:
+                sp_range += 1
+        plt.figure()
+        plt.pie([exact_port, all_range, range_port, sp_range], labels=['exact_port', 'all_range', 'range_port', 'sp_range'], autopct='%1.1f%%', pctdistance=0.8, labeldistance=1.1)
+        plt.savefig(os.path.join(current_path, f"pic/{field_name}_port_pie.jpg"), dpi=800)
+
+def show_src_dst_distribution():
+    plt.figure()
+    plt.xlabel(f"src-dst tuple")
+    plt.ylabel(f"src-dst tuple重复出现的次数")
+    for scale in rule_scale:
+        rules = global_total_rules[scale]
+        src_dst_tuple = defaultdict(int)
+        for rule in rules:
+            src_dst_tuple[(rule[0], rule[1], rule[2], rule[3])] += 1
+        src_dst_tuple = sorted(src_dst_tuple.items(), key=lambda x: -x[1])
+        x, y = [i for i in range(len(src_dst_tuple))], [i[1] for i in src_dst_tuple]
+        plt.scatter(x, y, label=f"{scale}k", s=2)
+    plt.legend()
+    plt.savefig(os.path.join(current_path, f"pic/src_dst_tuple_distribution.jpg"), dpi=800)
+
+def show_port_tuple_distribution():
+    rules = global_total_rules[rule_scale[-1]]
+    binary_binary, binary_interval, binary_ternary = 0, 0, 0
+    interval_binary, interval_interval, interval_ternary = 0, 0, 0
+    ternary_binary, ternary_interval, ternary_ternary = 0, 0, 0
+    for rule in rules:
+        sport_start, sport_end = rule[5], rule[6]
+        dport_start, dport_end = rule[7], rule[8]
+        if sport_start == sport_end:
+            if dport_start == dport_end:
+                binary_binary += 1
+            elif dport_start==0 and dport_end==65535:
+                binary_ternary += 1
+            else:
+                binary_interval += 1
+        elif sport_start==0 and sport_end==65535:
+            if dport_start == dport_end:
+                ternary_binary += 1
+            elif dport_start==0 and dport_end==65535:
+                ternary_ternary += 1
+            else:
+                ternary_interval += 1
+        else:
+            if dport_start == dport_end:
+                interval_binary += 1
+            elif dport_start==0 and dport_end==65535:
+                interval_ternary += 1
+            else:
+                interval_interval += 1
+    labels = ['(Binary,Binary)', '(Binary,Interval)', '(Binary,Ternary)', '(Interval,Binary)', '(Interval,Interval)', '(Interval,Ternary)', '(Ternary,Binary)', '(Ternary,Interval)', '(Ternary,Ternary)']
+    sizes = [binary_binary, binary_interval, binary_ternary, interval_binary, interval_interval, interval_ternary, ternary_binary, ternary_interval, ternary_ternary]
+    tp = zip(sizes, labels)
+    tp = sorted(tp, key=lambda x: -x[0])
+    sizes, labels = [i[0] for i in tp], [i[1] for i in tp]
+    fig, ax = plt.subplots()
+    total_sum, maxv = sum(sizes), max(sizes)
+    explode = [0.05*i for i in range(len(sizes))]
+    ax.pie(sizes, labels=None, startangle=90, autopct='%1.1f%%', pctdistance=0.8, explode=explode)
+    ax.axis('equal')
+    plt.legend(labels, loc='upper right', bbox_to_anchor=(1.1, 0.3), fontsize=8)
+    plt.savefig(os.path.join(current_path, f"pic/port_tuple_pie.jpg"), dpi=800)
+
+def splitRange(start, end, L):
+    res = []
+    mask = ((1 << 16)-1) ^ ((1 << L)-1)
+    # print(bin(mask))
+    while 1:
+        if start&mask == end&mask:
+            res.append((start, end))
+            break
+        else:
+            res.append((start, start|((1<<L)-1)))
+            start = start|((1<<L)-1)
+            start += 1
+    return res
+
+def show_src_dst_port_distribution():
+    plt.figure()
+    L = 4
+    prefix_mask = (((1 << 16)-1) ^ ((1 << L)-1))
+    for scale in rule_scale[0:1]:
+        scale = rule_scale[-1]
+        rules = global_total_rules[scale]
+        src_dst_tuple = defaultdict(list)
+        src_dst_no_exact_tuple = defaultdict(list)
+        src_dst_port_split = defaultdict(dict)
+        for rule in rules:
+            key = str(IPv4Address(rule[0])) + '/' + get_prefix(rule[1]) + '-' + str(IPv4Address(rule[2])) + '/' + get_prefix(rule[3])
+            dport_st, dport_ed = rule[7], rule[8]
+            src_dst_tuple[key].append(rule[4:9])
+            if key not in src_dst_no_exact_tuple:
+                src_dst_no_exact_tuple[key] = []
+            if (dport_st != dport_ed):
+                src_dst_no_exact_tuple[key].append(tuple(list(rule[4:9])+[rule[-1]]))
+            key_tuple = src_dst_port_split[key]
+            if (dport_ed - dport_st+1 > (1<<L)):
+                continue
+            for (st, ed) in splitRange(dport_st, dport_ed, L):
+                index = st & prefix_mask
+                assert index == (ed & prefix_mask)
+                if index not in key_tuple:
+                    key_tuple[index] = []
+                key_tuple[index].append((st, ed, rule[4:9], rule[-1]))
+        src_dst_tuple = sorted(src_dst_tuple.items(), key=lambda x: -len(x[1]))
+        src_dst_no_exact_tuple = sorted(src_dst_no_exact_tuple.items(), key=lambda x: -len(x[1]))
+        for key in src_dst_port_split:
+            print(key)
+            for p_tuple in src_dst_port_split[key]:
+                sorted_p_tuple = sorted(src_dst_port_split[key][p_tuple], key=lambda x: x[0])
+                for (st, ed, rule, id) in sorted_p_tuple:
+                    print(f"{st}-{ed} {rule} {id}")
+        # print(f"================= scaled {scale}k =================")
+        # sum_length = sum([len(x[1]) for x in src_dst_no_exact_tuple])
+        # tp = src_dst_no_exact_tuple[1][1]
+        # for i in tp:
+        #     print(i)
+        # print(src_dst_no_exact_tuple[1][0])
+        # print(len(tp))
+        # average_length = sum_length/len(src_dst_no_exact_tuple)
+        # print(len(src_dst_no_exact_tuple), sum_length, average_length, f"{average_length/len(rules)*100:.6f}%")
+        # plt.xlabel(f"src-dst组合")
+        # plt.ylabel(f"该src-dst组合中非精确端口规则的数量", rotation="vertical", rotation_mode="anchor", ha="center")
+        # x, y = [i for i in range(len(src_dst_no_exact_tuple))], [len(i[1]) for i in src_dst_no_exact_tuple]
+        # plt.bar(x, y, label=f"{scale}k")
+        # plt.legend()
+        # plt.savefig(os.path.join(current_path, f"pic/no_exact_port_distribution.jpg"), dpi=800)
+    # exact_p, range_p = [], []
+    # for i in range(len(src_dst_tuple)):
+    #     # print(f"======={src_dst_tuple[i][0]}======")
+    #     exact_port = defaultdict(set)
+    #     range_port = defaultdict(set)
+    #     ex_cnt = 0
+    #     ra_cnt = 0
+    #     for x in src_dst_tuple[i][1]:
+    #         if (x[3] == x[4]):
+    #             exact_port[(x[3], x[4])].add(x)
+    #             ex_cnt += 1
+    #         else:
+    #             range_port[(x[3], x[4])].add(x)
+    #             ra_cnt += 1
+    #     exact_port = sorted(exact_port.items(), key=lambda x: -len(x[1]))
+    #     range_port = sorted(range_port.items(), key=lambda x: -len(x[1]))
+    #     # for (k, v) in exact_port:
+    #     #     if (len(v) > 1):
+    #     #         for x in v:
+    #     #             assert x[3] == x[4]
+    #     #             if (x[1], x[2]) == (0, 65535): continue
+    #     #             if (x[1], x[2]) == (1024, 65535): continue
+    #     #             if x[1] == x[2]: continue
+    #     if (ex_cnt != 0): exact_p.append((ex_cnt, ex_cnt-len(exact_port), i))
+    #     else: exact_p.append((0, 0, i))
+    #     if (ra_cnt != 0): range_p.append((ra_cnt, ra_cnt-len(range_port), i))
+    #     else: range_p.append((0, 0, i))
+    # sorted_exact_p = sorted(exact_p, key=lambda x: -x[1])
+    # tp = sorted(src_dst_tuple[sorted_exact_p[1][2]][1], key=lambda x: x[3])
+    # for ii in tp:
+    #     if (ii[3] == ii[4]):
+    #         print(ii)
+    # print(sorted_exact_p[1])
+    # sorted_range_p = sorted(range_p, key=lambda x: -x[1])
+    # tp = sorted(src_dst_tuple[sorted_range_p[1][2]][1], key=lambda x: x[3])
+    # for ii in tp:
+    #     if (ii[3] != ii[4]):
+    #         print(ii)
+    # sorted_range_p = sorted(range_p, key=lambda x: -x[1])  
+    # for (k, x, y) in sorted_exact_p[:1]:
+    #     print(f"{x*100:.1f}%")
+    #     for z in sorted(src_dst_tuple[y][1], key=lambda x: x[3]):
+    #         print(z)
+    # for (k, x, y) in sorted_range_p[:1]:
+    #     print(f"{x*100:.1f}%")
+    #     for z in sorted(src_dst_tuple[y][1], key=lambda x: x[3]):
+    #         print(z)
+    # plt.figure()
+    # plt.xlabel(f"src-dst tuple")
+    # plt.ylabel(f"src-dst tuple精确端口重复数量")
+    # x, y = [i for i in range(len(sorted_exact_p))], [i[1] for i in sorted_exact_p]
+    # plt.bar(x, y, label=f"{scale}k")
+    # plt.legend()
+    # plt.savefig(os.path.join(current_path, f"pic/src_dst_dport_exact_distribution.jpg"), dpi=800)
+
+    # plt.figure()
+    # plt.xlabel(f"src-dst tuple")
+    # plt.ylabel(f"src-dst tuple非精确端口重复数量")
+    # x, y = [i for i in range(len(sorted_range_p))], [i[1] for i in sorted_range_p]
+    # plt.bar(x, y, label=f"{scale}k")
+    # plt.legend()
+    # plt.savefig(os.path.join(current_path, f"pic/src_dst_dport_range_distribution.jpg"), dpi=800)
+
+def verfiy_dataset_distribution():
+    for scale in rule_scale:
+        rules = global_total_rules[scale]
+        hard_cnt = 0
+        for rule in rules:
+            src, smask, dst, dmask, proto, sport_start, sport_end, dport_start, dport_end, f1, f2, f3, match_rule_id = rule
             assert src == (src & smask)
             assert dst == (dst & dmask)
-            if (smask == (1<<32)-1 and dmask == (1<<32)-1): zero_ex += 1
-            # if (src == 0 or dst == 0): continue
-            src_mask_dic[str(IPv4Address(smask))] += 1
-            dst_mask_dic[str(IPv4Address(dmask))] += 1
-            dst_mask_dic[dmask] += 1
-            src_mask_diff[str(IPv4Address(src))].add(str(IPv4Address(smask)))
-            dst_mask_diff[str(IPv4Address(dst))].add(str(IPv4Address(dmask)))
-            if (smask != -10):
-                src_set.append([src, smask, str(IPv4Address(src)), str(IPv4Address(smask))])
-            if (dmask != -10):    
-                dst_set.append([dst, dmask, str(IPv4Address(dst)), str(IPv4Address(dmask))])
-            if (smask != -10 and dmask != -10):
-                src_dst_set.append([src, smask, dst, dmask, str(IPv4Address(src)), str(IPv4Address(smask)), str(IPv4Address(dst)), str(IPv4Address(dmask))])
-    print([i[1] for i in sorted(src_dst_dic.items(), key=lambda x: -x[1])[:10]])
-    print(len(src_dst_cardinality))
-    # src_set.sort(key=lambda x: x[0])
-    # dst_set.sort(key=lambda x: x[0])
-    # print(sorted(src_mask_dic.items(), key=lambda x: -x[1])[:5])
-    # print(sorted(dst_mask_dic.items(), key=lambda x: -x[1])[:5])
-    # print(len(sorted(src_mask_diff.items(), key=lambda x: -len(x[1]))[0][1]))
-    # print(len(sorted(dst_mask_diff.items(), key=lambda x: -len(x[1]))[0][1]))
-    # max_v = 1 << 28
-    # cnt, cnt1 = 0, 0
-    # for i in range(len(src_dst_set)):
-    #     if (src_dst_set[i][0] < max_v or src_dst_set[i][2] < max_v):
-    #         cnt += 1
-    #     else:
-    #         if ((1<<32)-1-src_dst_set[i][1] == (1<<8)-1 or (1<<32)-1-src_dst_set[i][3] == (1<<8)-1):
-    #             cnt1 += 1
-    # print(cnt, cnt1, zero_ex)
+            assert f1+f2+f3 == 0
+            if (dport_start==0 and dport_end==65535) or (dport_start==1024 and dport_end==65535): 
+                if not (sport_start==sport_end or (sport_start==0 and sport_end==65535) or (sport_start==1024 and sport_end==65535)):
+                    hard_cnt += 1
+                    pass
+            else:
+                assert sport_start==sport_end or (sport_start==0 and sport_end==65535) or (sport_start==1024 and sport_end==65535)
+        print(f"{hard_cnt} {len(rules)} {hard_cnt/len(rules)*100:.1f}%")
 
-# for i in [1, 10 ,22 ,55]:
-#     rule_set = []
-#     scale = i
-#     with open('../data/rules_{}k'.format(scale), 'r') as file:
-#         lines = file.readlines()
-#         for line in lines:
-#             rule_set.append(line.strip())
-#     key_dic = defaultdict(int)
-#     sfull_cnt, dfull_cnt = 0, 0
-#     srange_cnt, drange_cnt = 0, 0
-#     sexact_cnt, dexact_cnt = 0, 0
-#     srange_ex, drange_ex = 0, 0
-#     src, dst, proto, sport, dport = defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(int), defaultdict(int)
-#     for rule in rule_set:
-#         tp = rule.split()
-#         keyi, maski = map(lambda x: hex(int(x))[2:], tp[0].split('/'))
-#         a = [int(t) for t in tp[3].split(':')]
-#         b = [int(t) for t in tp[4].split(':')]
-#         key = ""
-#         key += " "+tp[0]
-#         key += " "+tp[1]
-#         # key += " "+tp[2]
-#         # key += " "+tp[3]
-#         # if (tp[1]=='0/0'): continue
-#         key += " "+tp[4]
-#         if(b[0] != b[1]): key_dic[key] += 1
-#         src[tp[0]] += 1
-#         dst[tp[1]] += 1
-#         proto[tp[2]] += 1
-#         sport[tp[3]] += 1
-#         dport[tp[4]] += 1
-#         if (a[0] == a[1]): sexact_cnt += 1
-#         elif (a[0] == 0 and a[1] == 65535): sfull_cnt += 1
-#         else: 
-#             srange_cnt += 1
-#             srange_ex += a[1]-a[0]
-#             # print(tp[3])
-#         if (b[0] == b[1]): dexact_cnt += 1
-#         elif (b[0] == 0 and b[1] == 65535): dfull_cnt += 1
-#         else: 
-#             drange_cnt += 1
-#             drange_ex += b[1]-b[0]
-#             # print(tp[4])
-#     # print(len(key_dic))
-#     cnt = [i for i in key_dic.values()]
-#     freq = Counter(cnt)
-#     freq = sorted(freq.items(), key=lambda x: x[0])
-#     axlab = [k[0] for k in freq]
-#     ax = [i for i in range(1, len(axlab)+1)]
-#     ay = [k[1] for k in freq]
-#     # x = [i for i in range(8)]
-#     # y = [ay[i] for i in range(3)]
-#     # y.extend([ay[i] for i in range(len(ay)-5, len(ay))])
-#     # xlab = [axlab[i] for i in range(3)]
-#     # xlab.extend([axlab[i] for i in range(len(axlab)-5, len(axlab))])
-#     xlab = axlab
-#     x = ax
-#     y = ay
-#     # print(x, y, xlab)
-#     # x为横坐标 y为纵坐标 画柱状图
-#     total_rule = 0
-#     figure = plt.figure(figsize=(25, 10))
-#     plt.subplots_adjust(left=0.03, right=0.93, bottom=0.05, top=0.93)
-#     plt.bar(x=x, height=y, width=0.8)
-#     plt.xticks(ticks=x, labels=xlab, rotation=0, fontsize=18)
-#     for i in range(len(x)):
-#         plt.text(x[i], y[i], str(y[i]), ha='center', va='bottom')
-#         total_rule += xlab[i]*y[i]
-#     plt.savefig("./pic/rule_{}k_freq.png".format(scale))
-#     # for [k, v] in key_dic.items():
-#     #     if (v == max(cnt)):
-#     #         print(k, v)
-#     print(scale, len(key_dic), total_rule)
-#     print("sport: ", sexact_cnt, srange_cnt, sfull_cnt, srange_ex)
-#     print("dport: ", dexact_cnt, drange_cnt, dfull_cnt, drange_ex)
 
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import Axes3D
-# total_Z = [0 for i in range(0, 2**32+1)]
-# for i in [1, 10, 22, 55]:
-#     scale = i
-#     fig = plt.figure()
-#     ax = fig.gca(projection='3d') 
-#     src_p_set = set()
-#     dst_p_set = set()
-#     X = []
-#     Y = []
-#     for i in range(0, 33):
-#         for j in range(0, 33):
-#             X.append(i)
-#             Y.append(j)
-#     Z = [0 for i in range(0, 33*33)]
-#     total_rule_num = 0
-#     with open('../data/rules_{}k'.format(scale), 'r') as file:
-#         lines = file.readlines()
-#         total_rule_num = len(lines)
-#         for line in lines:
-#             cur = line.strip().split()
-#             src_plen = bin(int(cur[0].split('/')[1])).count('1')
-#             dst_plen = bin(int(cur[1].split('/')[1])).count('1')
-#             Z[src_plen*33+dst_plen] += 1
-#             src_p_set.add(src_plen)
-#             dst_p_set.add(dst_plen)
-#     height = np.zeros_like(Z) 
-#     width = depth = 0.5 
-#     ax.bar3d(X, Y, height, width, depth, Z, shade=True)
-#     ax.set_xticks([0, 8, 16, 24, 32])  
-#     ax.set_yticks([0, 8, 16, 24, 32])  
-#     ax.set_xlabel('src_prefix_length')
-#     ax.set_ylabel('dst_prefix_length')
-#     ax.set_zlabel('rule_num')
-#     plt.savefig("./pic/rule_{}k_prefix.png".format(scale))
-#     # print(len(src_p_set), len(dst_p_set))
-#     cnt = []
-#     for i in range(0, 33):
-#         for j in range(0, 33):
-#             cnt.append([i, j, Z[i*33+j]])
-#             total_Z[i*33+j] += Z[i*33+j]/total_rule_num
-#     cnt.sort(key=lambda x: x[2], reverse=True)
-#     sum_v, sum_pr = 0, 0.0
-#     for i in range(0, 10):
-#         if (cnt[i][2] == 0): break
-#         sum_v += cnt[i][2]
-#         sum_pr += cnt[i][2]/total_rule_num
-#         # print(f"({cnt[i][0]}, {cnt[i][1]}) {cnt[i][2]} {cnt[i][2]/total_rule_num:.7%}")
-#         print(f"({cnt[i][0]}, {cnt[i][1]})", end=" ")
-#     print()
-# # total_cnt = []
-# # for i in range(0, 33):
-# #     for j in range(0, 33):
-# #         total_cnt.append([i, j, total_Z[i*33+j]])
-# # total_cnt.sort(key=lambda x: x[2], reverse=True)
-# # for i in range(0, 10):
-# #     print(f"({total_cnt[i][0]}, {total_cnt[i][1]})", end=" ")
-# # print()
+def show_src_dst_sport_dport_distribution():
+    for scale in rule_scale[len(rule_scale)-1:len(rule_scale)]:
+        rules = global_total_rules[scale]
+        src_dst_tuple = defaultdict(list)
+        exact_dport = 0
+        exact_dport_es, exact_dport_rs, exact_dport_ts = 0, 0, 0
+        exact_dport_urs = 0
+        for rule in rules:
+            # if not (rule[7] == rule[8]): continue
+            # if not (rule[7]==0 and rule[8]==65535): continue
+            # if not (rule[7]==1024 and rule[8]==65535): continue
+            if ((rule[7] == rule[8]) or (rule[7]==0 and rule[8]==65535) or (rule[7]==1024 and rule[8]==65535)): continue
+            key = (rule[0], rule[1], rule[2], rule[3], rule[4], rule[7], rule[8])
+            src_dst_tuple[key].append(rule)
+            exact_dport += 1
+            if (rule[5] == rule[6]): 
+                exact_dport_es += 1
+                # key = (rule[0], rule[1], rule[2], rule[3], rule[5], rule[6],rule[7], rule[8])
+                # src_dst_tuple[key].append(rule)
+            elif (rule[5] == 0 and rule[6] == 65535): 
+                exact_dport_ts += 1
+                key = (rule[0], rule[1], rule[2], rule[3], rule[7], rule[8])
+                # src_dst_tuple[key].append(rule)
+            elif (rule[5] == 1024 and rule[6] == 65535):
+                exact_dport_rs += 1
+                # key = (rule[0], rule[1], rule[2], rule[3], rule[7], rule[8])
+                # src_dst_tuple[key].append(rule)
+            else:
+                exact_dport_urs += 1
+                # key = (rule[0], rule[1], rule[2], rule[3], rule[5], rule[6], rule[7], rule[8])
+                # src_dst_tuple[key].append(rule)
+        print(f"{exact_dport_es/exact_dport*100:.3f}% {exact_dport_ts/exact_dport*100:.3f}% {exact_dport_rs/exact_dport*100:.3f}% {exact_dport_urs/exact_dport*100:.3f}%")
+        maxv, rule, cnt = 0, None, 0
+        for (k, v) in src_dst_tuple.items():
+            # if (len(v) != 1): cnt += 1
+            if (len(v) > maxv):
+                if (v[0][7]==0 and v[0][8]==1023): continue
+                maxv = len(v)
+                rule = v
+        print(f"======={scale}k=======")
+        print(len(rule))
+        for i in rule:
+            print(i)
 
-# src_st = [8, 12, 16, 18, 20, 22, 24, 26, 28, 30, 32]
-# src_st = [8, 16, 24, 28, 32]
-# dst_st = [8, 12, 16, 22, 24, 26, 27, 28, 29, 31, 32]
-# dst_st = [8, 16, 24, 28, 32]
-# for i in [1, 10, 15, 22, 55]:
-#     scale = i
-#     rule_num = 0
-#     src = defaultdict(int)
-#     src_ori = defaultdict(int)
-#     dst = defaultdict(int)
-#     dst_ori = defaultdict(int)
-#     src_diff_map = defaultdict(dict)
-#     dst_diff_map = defaultdict(dict)
-#     src_add = dst_add = 0
-#     src_sum = dst_sum = 0
-#     with open('../data/rules_{}k'.format(scale), 'r') as file:
-#         lines = file.readlines()
-#         rule_num = len(lines)
-#         for line in lines:
-#             cur = line.strip().split()
-#             src_plen = bin(int(cur[0].split('/')[1])).count('1')
-#             dst_plen = bin(int(cur[1].split('/')[1])).count('1')
-#             if (src_plen != 0): 
-#                 src_sum += 1
-#                 src_ori[src_plen] += 1
-#                 for prefix in src_st:
-#                     if (prefix >= src_plen):
-#                         src[prefix] += 1
-#                         src_add += ((1 << (prefix-src_plen))-1)
-#                         for add in range(1 << (prefix-src_plen)):
-#                             ex_key = int(cur[0].split('/')[0]) + add << (32 - prefix)
-#                             if (ex_key not in src_diff_map[prefix]):
-#                                 src_diff_map[prefix][ex_key] = 1
-#                             else:
-#                                 src_diff_map[prefix][ex_key] += 1
-#                         break
-#             if (dst_plen != 0): 
-#                 dst_sum += 1
-#                 dst_ori[dst_plen] += 1
-#                 for prefix in dst_st:
-#                     if (prefix >= dst_plen):
-#                         dst[prefix] += 1
-#                         dst_add += ((1 << (prefix-dst_plen))-1)
-#                         for add in range(1 << (prefix-dst_plen)):
-#                             ex_key = int(cur[1].split('/')[0]) + add << (32 - prefix)
-#                             if (ex_key not in dst_diff_map[prefix]):
-#                                 dst_diff_map[prefix][ex_key] = 1
-#                             else:
-#                                 dst_diff_map[prefix][ex_key] += 1
-#                         break
-#     print(f"Scale: {scale}k")
-#     src_worst, dst_worst = 0, 0
-#     for k in src_st:
-#         # print(f"src prefix: {k}")
-#         cur = src_diff_map[k]
-#         for [p, v] in sorted(cur.items(), key=lambda x: -x[1]):
-#             print(f"({p},{v})", end=" ")
-#             src_worst += v
-#             break
-#         # print()
-#     for k in dst_st:
-#         # print(f"dst prefix: {k}")
-#         cur = dst_diff_map[k]
-#         for [p, v] in sorted(cur.items(), key=lambda x: -x[1]):
-#             print(f"({p},{v})", end=" ")
-#             dst_worst += v
-#             break
-#         # print()
-#     print("Worst query rules:", f"({src_worst},{rule_num}({src_add}),{src_worst/(rule_num+src_add):.3%})", f"({dst_worst},{rule_num}({dst_add}),{dst_worst/(rule_num+dst_add):.3%})")
-#     print(f"extends src: {src_add}, {src_sum} {src_add/src_sum:.3%}")
-#     print(f"extends dst: {dst_add}, {dst_sum} {dst_add/dst_sum:.3%}")
-#     # for s in src_cnt:
-#     #     print(f"({s[0]},{s[1]})", end=" ")
-#     # print()
-#     # for d in dst_cnt:
-#     #     print(f"({d[0]},{d[1]})", end=" ")
-#     # print()
-def get_rules(scale):
-    rules = []
-    with open(os.path.join(parent_path, f"data/rules_{scale}k"), "r") as f:
-        lines = f.readlines()
-        for line in lines:
-            tp = line.strip().split()
-            src, smask = map(int, tp[0].split('/'))
-            dst, dmask = map(int, tp[1].split('/'))
-            proto = int(tp[2])
-            sport_start, sport_end = map(int, tp[3].split(':'))
-            dport_start, dport_end = map(int, tp[4].split(':'))
-            f1, f2, f3 = int(tp[5]), int(tp[6]), int(tp[7])
-            match_rule_id = int(tp[8])
-            rules.append((src, smask, dst, dmask, proto, sport_start, sport_end, dport_start, dport_end, f1, f2, f3, match_rule_id))
-    return rules
-
-def show_field_cardinality(rules):
-    
 
 if __name__ == "__main__":
-    for i in [1, 10, 22, 55]:
-        rules = get_rules(i)
-        show_field_cardinality(rules)
+    get_rules()
+    # show_field_cardinality()
+    # show_field_distribution()
+    # show_ip_mask_distribution()
+    # show_src_dst_tuple_mask_3D_distribution()
+    # show_src_dst_distribution()
+    # show_port_distribution()
+    # show_port_tuple_distribution()
+    show_src_dst_port_distribution()
+    # show_src_dst_sport_dport_distribution()
+    # verfiy_dataset_distribution()
+    
+
