@@ -232,7 +232,6 @@ def show_port_tuple_distribution():
 def splitRange(start, end, L):
     res = []
     mask = ((1 << 16)-1) ^ ((1 << L)-1)
-    # print(bin(mask))
     while 1:
         if start&mask == end&mask:
             res.append((start, end))
@@ -273,88 +272,12 @@ def show_src_dst_port_distribution():
         src_dst_tuple = sorted(src_dst_tuple.items(), key=lambda x: -len(x[1]))
         src_dst_no_exact_tuple = sorted(src_dst_no_exact_tuple.items(), key=lambda x: -len(x[1]))
         for key in src_dst_port_split:
-            print(key)
+            print(f"================={key}=================")
             for p_tuple in src_dst_port_split[key]:
+                print(f"-----------------port {p_tuple}-----------------")
                 sorted_p_tuple = sorted(src_dst_port_split[key][p_tuple], key=lambda x: x[0])
                 for (st, ed, rule, id) in sorted_p_tuple:
                     print(f"{st}-{ed} {rule} {id}")
-        # print(f"================= scaled {scale}k =================")
-        # sum_length = sum([len(x[1]) for x in src_dst_no_exact_tuple])
-        # tp = src_dst_no_exact_tuple[1][1]
-        # for i in tp:
-        #     print(i)
-        # print(src_dst_no_exact_tuple[1][0])
-        # print(len(tp))
-        # average_length = sum_length/len(src_dst_no_exact_tuple)
-        # print(len(src_dst_no_exact_tuple), sum_length, average_length, f"{average_length/len(rules)*100:.6f}%")
-        # plt.xlabel(f"src-dst组合")
-        # plt.ylabel(f"该src-dst组合中非精确端口规则的数量", rotation="vertical", rotation_mode="anchor", ha="center")
-        # x, y = [i for i in range(len(src_dst_no_exact_tuple))], [len(i[1]) for i in src_dst_no_exact_tuple]
-        # plt.bar(x, y, label=f"{scale}k")
-        # plt.legend()
-        # plt.savefig(os.path.join(current_path, f"pic/no_exact_port_distribution.jpg"), dpi=800)
-    # exact_p, range_p = [], []
-    # for i in range(len(src_dst_tuple)):
-    #     # print(f"======={src_dst_tuple[i][0]}======")
-    #     exact_port = defaultdict(set)
-    #     range_port = defaultdict(set)
-    #     ex_cnt = 0
-    #     ra_cnt = 0
-    #     for x in src_dst_tuple[i][1]:
-    #         if (x[3] == x[4]):
-    #             exact_port[(x[3], x[4])].add(x)
-    #             ex_cnt += 1
-    #         else:
-    #             range_port[(x[3], x[4])].add(x)
-    #             ra_cnt += 1
-    #     exact_port = sorted(exact_port.items(), key=lambda x: -len(x[1]))
-    #     range_port = sorted(range_port.items(), key=lambda x: -len(x[1]))
-    #     # for (k, v) in exact_port:
-    #     #     if (len(v) > 1):
-    #     #         for x in v:
-    #     #             assert x[3] == x[4]
-    #     #             if (x[1], x[2]) == (0, 65535): continue
-    #     #             if (x[1], x[2]) == (1024, 65535): continue
-    #     #             if x[1] == x[2]: continue
-    #     if (ex_cnt != 0): exact_p.append((ex_cnt, ex_cnt-len(exact_port), i))
-    #     else: exact_p.append((0, 0, i))
-    #     if (ra_cnt != 0): range_p.append((ra_cnt, ra_cnt-len(range_port), i))
-    #     else: range_p.append((0, 0, i))
-    # sorted_exact_p = sorted(exact_p, key=lambda x: -x[1])
-    # tp = sorted(src_dst_tuple[sorted_exact_p[1][2]][1], key=lambda x: x[3])
-    # for ii in tp:
-    #     if (ii[3] == ii[4]):
-    #         print(ii)
-    # print(sorted_exact_p[1])
-    # sorted_range_p = sorted(range_p, key=lambda x: -x[1])
-    # tp = sorted(src_dst_tuple[sorted_range_p[1][2]][1], key=lambda x: x[3])
-    # for ii in tp:
-    #     if (ii[3] != ii[4]):
-    #         print(ii)
-    # sorted_range_p = sorted(range_p, key=lambda x: -x[1])  
-    # for (k, x, y) in sorted_exact_p[:1]:
-    #     print(f"{x*100:.1f}%")
-    #     for z in sorted(src_dst_tuple[y][1], key=lambda x: x[3]):
-    #         print(z)
-    # for (k, x, y) in sorted_range_p[:1]:
-    #     print(f"{x*100:.1f}%")
-    #     for z in sorted(src_dst_tuple[y][1], key=lambda x: x[3]):
-    #         print(z)
-    # plt.figure()
-    # plt.xlabel(f"src-dst tuple")
-    # plt.ylabel(f"src-dst tuple精确端口重复数量")
-    # x, y = [i for i in range(len(sorted_exact_p))], [i[1] for i in sorted_exact_p]
-    # plt.bar(x, y, label=f"{scale}k")
-    # plt.legend()
-    # plt.savefig(os.path.join(current_path, f"pic/src_dst_dport_exact_distribution.jpg"), dpi=800)
-
-    # plt.figure()
-    # plt.xlabel(f"src-dst tuple")
-    # plt.ylabel(f"src-dst tuple非精确端口重复数量")
-    # x, y = [i for i in range(len(sorted_range_p))], [i[1] for i in sorted_range_p]
-    # plt.bar(x, y, label=f"{scale}k")
-    # plt.legend()
-    # plt.savefig(os.path.join(current_path, f"pic/src_dst_dport_range_distribution.jpg"), dpi=800)
 
 def verfiy_dataset_distribution():
     for scale in rule_scale:

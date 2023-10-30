@@ -30,6 +30,7 @@ def show_ip_cardinality():
 
 def get_bgp_rule():
     for i in bgp_rule_scale:
+        rule_set = set()
         with open(os.path.join(parent_path, "data/bview.20020722.2337.gz.bgp"), 'r') as f:
             lines = f.readlines()
             for line in lines:
@@ -38,6 +39,11 @@ def get_bgp_rule():
                 line = line.split("|")
                 ip, mask = line[5].split("/")
                 global_bgp_rules[i].append((int(IPv4Address(ip)), int(mask), ori))
+                rule_set.add((int(IPv4Address(ip)), int(mask)))
+        rule_set = sorted(rule_set, key=lambda x: x[1])
+        with open(os.path.join(parent_path, "data/bgp_115k"), 'w') as f:
+            for bgp_rule in rule_set:
+                f.write(str(bgp_rule[0])+" "+str(bgp_rule[1])+"\n")
 
 def show_ip_distribution():
     plt.figure()
@@ -75,7 +81,7 @@ def show_bgp_ip_mask_distribution():
 
 if __name__ == "__main__":
     get_bgp_rule()
-    show_ip_cardinality()
-    show_ip_distribution()
+    # show_ip_cardinality()
+    # show_ip_distribution()
     # show_bgp_ip_mask_distribution()
     
