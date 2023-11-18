@@ -6,7 +6,6 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/qzj/MAT/main.cpp" "/home/qzj/MAT/build/CMakeFiles/MAT.dir/main.cpp.o"
   "/home/qzj/MAT/src/MAT.cpp" "/home/qzj/MAT/build/CMakeFiles/MAT.dir/src/MAT.cpp.o"
-  "/home/qzj/MAT/utils/murmurhash.cpp" "/home/qzj/MAT/build/CMakeFiles/MAT.dir/utils/murmurhash.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

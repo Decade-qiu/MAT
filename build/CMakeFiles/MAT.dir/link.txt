@@ -1,1 +1,1 @@
-/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/MAT.dir/utils/murmurhash.cpp.o CMakeFiles/MAT.dir/src/MAT.cpp.o CMakeFiles/MAT.dir/main.cpp.o  -o MAT 
+/usr/bin/c++  -g   CMakeFiles/MAT.dir/src/MAT.cpp.o CMakeFiles/MAT.dir/main.cpp.o  -o MAT 

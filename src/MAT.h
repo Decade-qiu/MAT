@@ -50,14 +50,14 @@ struct ip_rule{
 
 struct slot{
     int used;
-    unsigned int next;
+    unsigned int snext, dnext;
     struct ip_key* key;
     struct ip_value* value;
     struct trie_node* node;
 };
 
 struct trie_node{
-    unsigned int next;
+    unsigned int snext, dnext;
     struct ip_key* key;  
     struct ip_value* value;
     struct trie_node* childs[MAX_CHILD_NUM];

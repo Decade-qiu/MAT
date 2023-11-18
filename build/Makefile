@@ -177,33 +177,6 @@ src/MAT.cpp.s:
 	$(MAKE) -f CMakeFiles/MAT.dir/build.make CMakeFiles/MAT.dir/src/MAT.cpp.s
 .PHONY : src/MAT.cpp.s
 
-utils/murmurhash.o: utils/murmurhash.cpp.o
-
-.PHONY : utils/murmurhash.o
-
-# target to build an object file
-utils/murmurhash.cpp.o:
-	$(MAKE) -f CMakeFiles/MAT.dir/build.make CMakeFiles/MAT.dir/utils/murmurhash.cpp.o
-.PHONY : utils/murmurhash.cpp.o
-
-utils/murmurhash.i: utils/murmurhash.cpp.i
-
-.PHONY : utils/murmurhash.i
-
-# target to preprocess a source file
-utils/murmurhash.cpp.i:
-	$(MAKE) -f CMakeFiles/MAT.dir/build.make CMakeFiles/MAT.dir/utils/murmurhash.cpp.i
-.PHONY : utils/murmurhash.cpp.i
-
-utils/murmurhash.s: utils/murmurhash.cpp.s
-
-.PHONY : utils/murmurhash.s
-
-# target to generate assembly for a file
-utils/murmurhash.cpp.s:
-	$(MAKE) -f CMakeFiles/MAT.dir/build.make CMakeFiles/MAT.dir/utils/murmurhash.cpp.s
-.PHONY : utils/murmurhash.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -219,9 +192,6 @@ help:
 	@echo "... src/MAT.o"
 	@echo "... src/MAT.i"
 	@echo "... src/MAT.s"
-	@echo "... utils/murmurhash.o"
-	@echo "... utils/murmurhash.i"
-	@echo "... utils/murmurhash.s"
 .PHONY : help
 
 
