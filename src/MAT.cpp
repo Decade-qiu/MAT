@@ -13,13 +13,14 @@
 #include <algorithm>
 #include <random>
 #include <cstddef>
+#include <iomanip>
 #include "MAT.h"
 // #include "../utils/murmurhash.h"
 
 // #define SEED 171
 #define MAX_ZERO_RULE_NUM 512
 #define MAX_LAYER_NUM 128
-#define MAX_SLOT_NUM 256
+#define MAX_SLOT_NUM 512
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
@@ -33,7 +34,7 @@ struct MAT_DATA_STRUCTURE {
     int rule_num;
     int packet_num;
     int zero_rule_num;
-    int loops, hash;
+    int loops, hash, query_rules;
     std::unordered_set<struct trie_node*> Ec;
 } data;
 #define seed            data.seed
@@ -48,7 +49,12 @@ struct MAT_DATA_STRUCTURE {
 #define packet_num      data.packet_num
 #define loops           data.loops
 #define hash            data.hash
+#define query_rules     data.query_rules
 struct trie_node* root;
+
+struct opti_trie_node* opti_root;
+int level_depth = 1+3;
+double true_query_time = 0;
 
 inline void init_tree_node(struct trie_node* node, struct ip_rule* rule){
     node->key = &rule->key;
@@ -74,8 +80,6 @@ inline void init_vtree_node(struct trie_node* node, unsigned int key, unsigned i
     node->key->value = key & mask;
     node->key->mask = mask;
     node->value = (struct ip_value*)malloc(sizeof(struct ip_value));
-    node->value->field[0].value = dst & mask1;
-    node->value->field[0].mask = mask1;
     node->value->action = -1;
     node->value->id = node->value->priority = 0;
     node->snext = 0;
@@ -517,6 +521,7 @@ inline int value_match(const struct packet* pkt, struct ip_value* value){
 }
 
 inline struct ip_value* zero_rule_query(const struct packet* pkt){
+    query_rules += zero_rule_num;
     int i = 0, res = -1, max_pri = MIN_PRIORITY;
     for (i = 0;i < zero_rule_num;++i){
         if (value_match(pkt, &Zc[i].value)){
@@ -538,7 +543,7 @@ inline struct ip_value* _oracle(const struct packet* pkt, struct trie_node* inpu
     int i = 0, n = cur->child_num;
     while (i < n){
         trie_node* child = cur->childs[i];
-        if (child->key->value == (src & csmask) && child->value->field[0].value == (dst & cdmask)){
+        if (child->key->value == (src & cmask)){
             if (child->value->action != -1 && value_match(pkt, child->value)){
                 if (child->value->priority > max_pri){
                     res = child->value;
@@ -678,6 +683,85 @@ int query(const struct packet* pkt){
         ip_value* oracle_res = _oracle(pkt, pre);
         if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
     }
+    return res == nullptr ? 0 : res->id;
+}
+
+int opti_trie_insert(struct ip_rule* rule){
+    unsigned int src_st = rule->key.value;
+    unsigned int src_ed = src_st + (UINT32_MAX - rule->key.mask);
+    unsigned int dst_st = rule->value.field[0].value;
+    unsigned int dst_ed = dst_st + (UINT32_MAX - rule->value.field[0].mask);
+    std::vector<struct opti_trie_node*> cur_children;
+    for (int i = 0;i < opti_root->children.size();++i){
+        struct opti_trie_node* cur_child = opti_root->children[i];
+        if (src_st > cur_child->src_end ||
+            src_ed < cur_child->src_start ||
+            dst_st > cur_child->dst_end ||
+            dst_ed < cur_child->dst_start){
+            continue;
+        }
+        cur_children.push_back(cur_child);
+    }
+    for (int i = 1;i < level_depth;i++){
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            if (cur_child->children.size() == 0){
+                nxt_children.push_back(cur_child);
+                continue;
+            }
+            for (int k = 0;k < cur_child->children.size();++k){
+                struct opti_trie_node* nxt_child = cur_child->children[k];
+                if (src_st > nxt_child->src_end ||
+                    src_ed < nxt_child->src_start ||
+                    dst_st > nxt_child->dst_end ||
+                    dst_ed < nxt_child->dst_start){
+                    continue;
+                }
+                nxt_children.push_back(nxt_child);
+            }
+        }
+        cur_children = nxt_children;
+    }
+    for (int i = 0;i < cur_children.size();++i){
+        struct opti_trie_node* cur_child = cur_children[i];
+        cur_child->rules.push_back(rule);
+    }
+}
+
+int opti_trie_query(const struct packet* pkt){
+    unsigned int src = pkt->src, dst = pkt->dst;
+    struct opti_trie_node* cur = opti_root;
+    for (int i = 0;i < level_depth;i++){
+        for (int j = 0;j < cur->children.size();++j){
+            struct opti_trie_node* cur_child = cur->children[j];
+            if (src >= cur_child->src_start && src <= cur_child->src_end &&
+                dst >= cur_child->dst_start && dst <= cur_child->dst_end){
+                cur = cur_child;
+                break;
+            }
+        }
+    }
+    ip_value* res = nullptr;
+    int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
+    clock_t start, end;
+    query_rules += cur->rules.size();
+    start = clock();
+    for (int i = 0;i < cur->rules.size();++i){
+        struct ip_rule* rule = cur->rules[i];
+        if ((src & rule->key.mask) == rule->key.value && 
+            match(pkt->dst, &rule->value.field[0]) &&
+            match(pkt->proto, &rule->value.field[1]) &&
+            match(pkt->sport, &rule->value.field[2]) &&
+            match(pkt->dport, &rule->value.field[3])){
+            if (rule->value.priority > max_pri){
+                res = &rule->value;
+                max_pri = rule->value.priority;
+            }
+        }
+    }
+    end = clock();
+    true_query_time += (double)(end-start);
     return res == nullptr ? 0 : res->id;
 }
 
@@ -889,11 +973,91 @@ void print_Sc(){
     fout.close();
 }
 
-void print_info(){
+void display_longest_path(int scale){
+    if (root == nullptr) return;
+    std::ofstream fout;
+    fout.open("../data/longest_path_"+std::to_string(scale));
+    // BFS
+    int max_depth = 0;
+    struct trie_node* max_node = nullptr;
+    std::queue<struct trie_node*> q;
+    q.push(root);
+    while (!q.empty()){
+        int s = q.size();
+        while (s--){
+            trie_node* cur = q.front();
+            q.pop();
+            if (cur->depth > max_depth){
+                max_depth = cur->depth;
+                max_node = cur;
+            }
+            for (int i = 0;i < cur->child_num;++i){
+                q.push(cur->childs[i]);
+            }
+        }
+    }
+    while (max_node != root){
+        // fout << std::hex << max_node->key->value << "/" << std::dec << countOnes(max_node->key->mask) << "" << std::hex << max_node->value->field[0].value << "/" << std::dec << countOnes(max_node->value->field[0].mask) << " " << std::dec << max_node->value->field[1].value << " " << std::dec << max_node->value->field[2].value << ":" << std::dec << max_node->value->field[2].mask << " " << std::dec << max_node->value->field[3].value << ":" << std::dec << max_node->value->field[3].mask << " ";
+        // if (max_node->value->action == -1) fout << "V ";
+        // else fout << max_node->value->id << " ";
+        std::ostringstream oss1;
+        oss1 << std::hex << max_node->key->value << "/" << std::dec << countOnes(max_node->key->mask) << " ";
+        std::string output1 = oss1.str();
+        fout << std::setw(12) << output1;
+
+        std::ostringstream oss2;
+        oss2 << std::hex << max_node->value->field[0].value << "/" << std::dec << countOnes(max_node->value->field[0].mask) << " ";
+        std::string output2 = oss2.str();
+        fout << std::setw(12) << output2;
+
+        std::ostringstream oss3;
+        oss3 << std::dec << max_node->value->field[1].value << " ";
+        std::string output3 = oss3.str();
+        fout << std::setw(4) << output3;
+
+        std::ostringstream oss4;
+        oss4 << std::dec << max_node->value->field[2].value << ":" << std::dec << max_node->value->field[2].mask << " ";
+        std::string output4 = oss4.str();
+        fout << std::setw(12) << output4;
+
+        std::ostringstream oss5;
+        oss5 << std::dec << max_node->value->field[3].value << ":" << std::dec << max_node->value->field[3].mask << " ";
+        std::string output5 = oss5.str();
+        fout << std::setw(12) << output5;
+
+        if (max_node->value->action == -1) 
+            fout << "V";
+        else 
+            fout << max_node->value->id;
+        fout << "\n";
+        max_node = max_node->father;
+    }
+    fout.close();
+}
+
+void print_info(int scale){
+    display_longest_path(scale);
     display(root);
     // print_acc();
     // print_Ec();
     // print_Sc();
+}
+
+void print_trie_info(){
+    struct opti_trie_node* cur = opti_root;
+    std::vector<struct opti_trie_node*> cur_children = cur->children;
+    for (int i = 0;i < level_depth;i++){
+        printf("level %d: %d\n", i, cur_children.size());
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            for (int k = 0;k < cur_child->children.size();++k){
+                struct opti_trie_node* nxt_child = cur_child->children[k];
+                nxt_children.push_back(nxt_child);
+            }
+        }
+        cur_children = nxt_children;
+    }
 }
 
 std::vector<std::string> split(const std::string& str, const std::string& pattern) {
@@ -1010,51 +1174,52 @@ void read_data_set(std::string rule_file, std::string packet_file){
 }
 
 void query_packets(){
-    uniform_shaflle(packet_set, packet_num);
+    // uniform_shaflle(packet_set, packet_num);
 
+    printf("Start query packets.\n");
     double run_time = 0;
     int i = 0, error_match = 0;
-    clock_t start, end; 
-    // printf("Start query packets.\n");
-    // for (i = 0; i < packet_num; ++i){
-    //     struct packet *p = &packet_set[i];
-    //     start = clock();
-    //     int rule_id = query(p);
-    //     end = clock();
-    //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
-    //     if (rule_id != packet_set[i].id){
-    //         error_match++;
-    //         // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
-    //     }   
-    // }
-    // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
-    // printf("loops %.2f, hash %.2f\n", loops*1.0/packet_num, hash*1.0/packet_num);
-
-    printf("Start query packets.(only Oracle)\n");
-    run_time = 0;
-    i = 0, error_match = 0;
+    clock_t start, end;
     for (i = 0; i < packet_num; ++i){
+        struct packet *p = &packet_set[i];
         start = clock();
-        int rule_id = oracle(&packet_set[i]);
+        int rule_id = query(p);
         end = clock();
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (rule_id != packet_set[i].id){
             error_match++;
-            // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
-        }
+            // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
+        }   
     }
     printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+    printf("loops %.2f, hash %.2f\n", loops*1.0/packet_num, hash*1.0/packet_num);
+
+    // printf("Start query packets.(only Oracle)\n");
+    // run_time = 0;
+    // i = 0, error_match = 0;
+    // for (i = 0; i < packet_num; ++i){
+    //     clock_t start = clock();
+    //     int rule_id = oracle(&packet_set[i]);
+    //     clock_t end = clock();
+    //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
+    //     if (rule_id != packet_set[i].id){
+    //         error_match++;
+    //         // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
+    //     }
+    // }
+    // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
 }
 
 void insert_rule(){
     uniform_shaflle(rule_set, rule_num);
-
-    printf("Start insert rules.\n");
+    init_opti_trie_struct();
     double run_time = 0;
     int i = 0, sucess_count = 0; 
+    printf("Start insert rules.\n");
     for (i = 0; i < rule_num; ++i){
         clock_t start = clock();
-        int st = insert(&rule_set[i]);
+        // int st = insert(&rule_set[i]);
+        int st = opti_trie_insert(&rule_set[i]);
         clock_t end = clock();
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (st == 0) sucess_count++; 

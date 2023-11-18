@@ -11,6 +11,8 @@ string
 -
 immintrin.h
 -
+vector
+-
 
 /home/qzj/MAT/main.cpp
 ./src/MAT.h
@@ -47,6 +49,11 @@ random
 -
 cstddef
 -
+<<<<<<< HEAD
+=======
+iomanip
+-
+>>>>>>> 22156990072ea76928f6d697531621f884a58bc5
 MAT.h
 /home/qzj/MAT/src/MAT.h
 
@@ -55,4 +62,9 @@ string
 -
 immintrin.h
 -
+<<<<<<< HEAD
+=======
+vector
+-
+>>>>>>> 22156990072ea76928f6d697531621f884a58bc5
 

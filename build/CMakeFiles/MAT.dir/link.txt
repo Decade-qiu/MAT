@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 /usr/bin/c++  -g   CMakeFiles/MAT.dir/src/MAT.cpp.o CMakeFiles/MAT.dir/main.cpp.o  -o MAT 
+=======
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/MAT.dir/src/MAT.cpp.o CMakeFiles/MAT.dir/main.cpp.o  -o MAT 
+>>>>>>> 22156990072ea76928f6d697531621f884a58bc5
