@@ -9,7 +9,7 @@
 #include <cstdlib> 
 #include <cstring> 
 #include <ctime>  
-#include <regex> 
+#include <regex>
 #include <algorithm>
 #include <random>
 #include <cstddef>
@@ -20,7 +20,7 @@
 // #define SEED 171
 #define MAX_ZERO_RULE_NUM 512
 #define MAX_LAYER_NUM 128
-#define MAX_SLOT_NUM 512
+#define MAX_SLOT_NUM (1 << 13)
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
 
@@ -59,8 +59,7 @@ double true_query_time = 0;
 inline void init_tree_node(struct trie_node* node, struct ip_rule* rule){
     node->key = &rule->key;
     node->value = &rule->value;
-    node->snext = 0;
-    node->dnext = 0;
+    node->next = 0;
     node->layer = 0;
     node->index = 0;
     node->depth = 0;
@@ -75,15 +74,20 @@ inline void init_tree_node(struct trie_node* node, struct ip_rule* rule){
     }
 }
 
-inline void init_vtree_node(struct trie_node* node, unsigned int key, unsigned int mask, unsigned int dst, unsigned int mask1){
+inline void init_vtree_node(struct trie_node* node, unsigned int key, unsigned int mask){
     node->key = (struct ip_key*)malloc(sizeof(struct ip_key));
     node->key->value = key & mask;
     node->key->mask = mask;
     node->value = (struct ip_value*)malloc(sizeof(struct ip_value));
+    for (int i = 0;i < 4;++i){
+        node->value->field[i].type = MASK;
+        node->value->field[i].value = 0;
+        node->value->field[i].mask = 0;
+        node->value->field[i].inv = 0;
+    }
     node->value->action = -1;
     node->value->id = node->value->priority = 0;
-    node->snext = 0;
-    node->dnext = 0;
+    node->next = 0;
     node->layer = 0;
     node->index = 0;
     node->depth = 0;
@@ -99,7 +103,7 @@ inline void init_vtree_node(struct trie_node* node, unsigned int key, unsigned i
 }
 
 inline int slot_index(unsigned int a){
-    // unsigned int index = 0; 
+    // unsigned int index = 0;
     // MurmurHash3_x86_32((unsigned int *)&a, SEED, &index);
     // return (index & (MAX_SLOT_NUM-1))+1;
     a = (a ^ 61) ^ (a >> 16);
@@ -110,26 +114,20 @@ inline int slot_index(unsigned int a){
     return (a & (MAX_SLOT_NUM-1))+1;
 }
 
-inline unsigned int get_key(unsigned int src, unsigned int smask, unsigned int dst, unsigned int dmask, int layer){
-    unsigned int hash_key = ((src & smask)^(dst & dmask)) ^ seed[layer-1]; 
-    return hash_key;
-}
-
-inline int store(int layer, struct trie_node* node, unsigned int mask, unsigned int mask1){
+inline int store(int layer, struct trie_node* node, unsigned int mask){
     if (layer <= MAX_LAYER_NUM && layer >= 1){
-        unsigned int hash_key = get_key(node->key->value, mask, node->value->field[0].value, mask1, layer); 
+        uint32_t hash_key = (node->key->value & mask) ^ seed[layer-1]; 
         int index = slot_index(hash_key);
         while (layer <= MAX_LAYER_NUM){
             struct slot* slot = &Sc[layer-1][index-1];
-            if (slot->used==0 || (slot->value->action == -1 && slot->key->value==node->key->value && slot->key->mask==mask && slot->value->field[0].value==node->value->field[0].value && slot->value->field[0].mask==mask1)){
+            if (slot->used==0 || (slot->value->action == -1 && slot->key->value==node->key->value && slot->key->mask==mask)){
                 if (slot->used != 0){
                     free(slot->key);
                     free(slot->value);
                 }
                 slot->key = node->key;
                 slot->value = node->value;
-                slot->snext = node->snext;
-                slot->dnext = node->dnext;
+                slot->next = node->next;
                 slot->used = 1;
                 slot->node = node;
                 node->layer = layer;
@@ -202,7 +200,7 @@ int write_acc(struct trie_node* cur){
     return 0;
 }
 
-int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, unsigned int mask, unsigned int mask1){
+int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, unsigned int mask){
     std::queue<std::vector<trie_node*>> child_pair;
     for (struct trie_node* child : childs){
         if (fa->child_num >= MAX_CHILD_NUM){
@@ -214,19 +212,15 @@ int write_node(struct trie_node* fa, std::vector<struct trie_node*>& childs, uns
         ++fa->child_num;
         child->father = fa;
     }
-    fa->snext = mask;
-    fa->dnext = mask1;
-    if (fa->layer >= 1){
-        Sc[fa->layer-1][fa->index-1].snext = mask;
-        Sc[fa->layer-1][fa->index-1].dnext = mask1;
-    }
+    fa->next = mask;
+    if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = mask;
     while (child_pair.size()){
         std::vector<trie_node*> cp = child_pair.front(); 
         child_pair.pop();
         trie_node* father = cp[0];
         trie_node* children = cp[1];
         children->depth = father->depth+1;
-        store(father->layer+1, children, father->snext, father->dnext);
+        store(father->layer+1, children, father->next);
         for (int j = 0;j < children->child_num;++j){
             child_pair.push({children, children->childs[j]});
         }
@@ -266,8 +260,7 @@ inline int dynamic_adjust2(std::unordered_map<int, int> index_layer){
                     Sc[child->layer-1][child->index-1].key = nullptr;
                     Sc[child->layer-1][child->index-1].value = nullptr;
                     Sc[child->layer-1][child->index-1].node = nullptr;
-                    Sc[child->layer-1][child->index-1].snext = 0;
-                    Sc[child->layer-1][child->index-1].dnext = 0;
+                    Sc[child->layer-1][child->index-1].next = 0;
                     child->layer = -1;
                     for (int k = 0;k < child->child_num;++k){
                         children.push(child->childs[k]);
@@ -281,7 +274,7 @@ inline int dynamic_adjust2(std::unordered_map<int, int> index_layer){
     for (int i = 0, n = adjust.size();i < n;++i){
         trie_node* cur = adjust[i];
         if (cur->layer != -1) continue;
-        store(cur->father->layer+1, cur, cur->father->snext, cur->father->dnext);
+        store(cur->father->layer+1, cur, cur->father->next);
         std::queue<std::vector<trie_node*>> children;
         int j = 0, m = cur->child_num;
         for (j = 0;j < m;++j){
@@ -292,7 +285,7 @@ inline int dynamic_adjust2(std::unordered_map<int, int> index_layer){
             children.pop();
             trie_node* father = cp[0];
             trie_node* child = cp[1];
-            store(father->layer+1, child, father->snext, father->dnext);
+            store(father->layer+1, child, father->next);
             for (int k = 0;k < child->child_num;k++){
                 children.push({child, child->childs[k]});
             }
@@ -307,10 +300,7 @@ inline int dynamic_adjust2(std::unordered_map<int, int> index_layer){
 }
 
 inline int delete_node(struct trie_node *fa){
-    if (fa->layer >= 1){
-        Sc[fa->layer-1][fa->index-1].snext = 0;
-        Sc[fa->layer-1][fa->index-1].dnext = 0;
-    }
+    if (fa->layer >= 1) Sc[fa->layer-1][fa->index-1].next = 0;
     int i = 0, n = fa->child_num, j = 0;
     fa->child_num = 0;
     std::queue<trie_node*> child_pair;
@@ -331,8 +321,7 @@ inline int delete_node(struct trie_node *fa){
             Sc[children->layer-1][children->index-1].key = nullptr;
             Sc[children->layer-1][children->index-1].value = nullptr;
             Sc[children->layer-1][children->index-1].node = nullptr;
-            Sc[children->layer-1][children->index-1].snext = 0;
-            Sc[children->layer-1][children->index-1].dnext = 0;
+            Sc[children->layer-1][children->index-1].next = 0;
             children->layer = -1;
             for (j = 0;j < children->child_num;++j){
                 child_pair.push(children->childs[j]);
@@ -390,15 +379,14 @@ int insert_tree(struct ip_rule* rule){
     rn = (struct trie_node *)malloc(sizeof(struct trie_node));
     init_tree_node(rn, rule); 
 
-    unsigned int src = rule->key.value, ismask = rule->key.mask;
-    unsigned int dst = rule->value.field[0].value, idmask = rule->value.field[0].mask;
+    unsigned int key = rule->key.value, imask = rule->key.mask;
     struct trie_node* cn = root;
-    unsigned int csmask = cn->snext, cdmask = cn->dnext;
+    unsigned int cmask = cn->next;
 
     int i = 0, n = cn->child_num, vn_eq_rn = 0;
     for (i = 0;i < n;++i){
         struct trie_node* cur = cn->childs[i];
-        if (cur->value->action == -1 && cur->key->value == src && csmask == ismask && cur->value->field[0].value == dst && cdmask == idmask){
+        if (cur->value->action == -1 && cur->key->value == key && cmask == imask){
             cur->key = &rule->key;
             cur->value = &rule->value;
             int layer = cur->layer, index = cur->index;
@@ -408,80 +396,70 @@ int insert_tree(struct ip_rule* rule){
             slot->value = &rule->value;
             return 0;
         }
-        if ((ismask & csmask) == csmask && (src & csmask) == cur->key->value && (idmask & cdmask) == cdmask && (dst & cdmask) == cur->value->field[0].value){
+        if ((imask & cmask) == cmask && (key & cmask) == cur->key->value){
             cn = cur;
-            csmask = cn->snext;
-            cdmask = cn->dnext;
+            cmask = cn->next;
             i = -1, n = cn->child_num;
             record_path(rn, cn);
         }
     }
     std::vector<struct trie_node*> insert_childs;
-    if ((csmask == 0 && cdmask == 0) || (csmask == ismask && cdmask == idmask)){
+    if (cmask == 0 || cmask == imask){
         insert_childs.push_back(rn);
-        write_node(cn, insert_childs, ismask, idmask);
+        write_node(cn, insert_childs, imask);
         record_path(rn, rn);
         write_acc(rn);
-    }else if ((ismask & csmask) == csmask && (idmask & cdmask) == cdmask){
+    }else if ((imask & cmask) == cmask){
         struct trie_node* vn;
         vn = (struct trie_node *)malloc(sizeof(struct trie_node));
-        init_vtree_node(vn, src, csmask, dst, cdmask);
+        init_vtree_node(vn, key, cmask);
         insert_childs.push_back(vn);
-        write_node(cn, insert_childs, csmask, cdmask);
+        write_node(cn, insert_childs, cmask);
         copy_node_path(vn, rn);
         record_path(vn, vn);
         write_acc(vn);
         insert_childs[0] = rn;
-        write_node(vn, insert_childs, ismask, idmask);
+        write_node(vn, insert_childs, imask);
         record_path(rn, vn);
         record_path(rn, rn);
         write_acc(rn);
-    }else if ((ismask & csmask) == ismask && (idmask & cdmask) == idmask){
-        std::unordered_map<unsigned long long, std::vector<struct trie_node*>> v_child;
+    }else{
+        std::unordered_map<unsigned int, std::vector<struct trie_node*>> v_child;
         for (i = 0;i < cn->child_num;++i){
-            unsigned int next_v_k1 = cn->childs[i]->key->value & ismask;
-            unsigned int next_v_k2 = cn->childs[i]->value->field[0].value & idmask;
-            unsigned long long next_v_key = ((unsigned long long)next_v_k1 << 32) | next_v_k2;
+            unsigned int next_v_key = cn->childs[i]->key->value & imask;
             v_child[next_v_key].push_back(cn->childs[i]);
         }
         delete_node(cn);    
-        for (std::pair<unsigned long long, std::vector<trie_node *>> pair: v_child){
-            unsigned long long v_key = pair.first;
-            unsigned int v_k1 = v_key >> 32, v_k2 = v_key & 0xffffffff;
+        for (std::pair<unsigned int, std::vector<trie_node *>> pair: v_child){
+            unsigned int v_key = pair.first;
             std::vector<struct trie_node*> v_childs = pair.second;
             struct trie_node* vn;
-            if (v_k1 == src && v_k2 == dst){
+            if (v_key == key){
                 vn_eq_rn = 1;
                 continue;
             }else{
                 vn = (struct trie_node *)malloc(sizeof(struct trie_node));
-                init_vtree_node(vn, v_k1, ismask, v_k2, idmask);
+                init_vtree_node(vn, v_key, imask);
             }
             insert_childs.clear();
             insert_childs.push_back(vn);
-            write_node(cn, insert_childs, ismask, idmask);
+            write_node(cn, insert_childs, imask);
             copy_node_path(vn, rn);
             record_path(vn, vn);
             write_acc(vn);
-            write_node(vn, v_childs, csmask, cdmask);
+            write_node(vn, v_childs, cmask);
             insert_path(v_childs, vn);
         }
         insert_childs.clear();
         insert_childs.push_back(rn);
-        write_node(cn, insert_childs, ismask, idmask);
+        write_node(cn, insert_childs, imask);
         record_path(rn, rn);
         write_acc(rn);
         if (vn_eq_rn == 1){
-            unsigned long long key = ((unsigned long long)src << 32)|dst;
             std::vector<struct trie_node*> v_childs = v_child[key];
-            write_node(rn, v_childs, csmask, cdmask);
+            write_node(rn, v_childs, cmask);
             insert_path(v_childs, rn);
         }
-    }else{
-        insert_childs.push_back(rn);
-        write_node(cn, insert_childs, ismask, idmask);
-        record_path(rn, rn);
-        write_acc(rn);
     }
     return 0;
 }
@@ -538,21 +516,20 @@ inline struct ip_value* _oracle(const struct packet* pkt, struct trie_node* inpu
     ip_value* res = nullptr;
     int max_pri = MIN_PRIORITY;
     trie_node* cur = input;
-    unsigned int csmask = cur->snext, src = pkt->src;
-    unsigned int cdmask = cur->dnext, dst = pkt->dst;
+    unsigned int cmask = cur->next, src = pkt->src;
     int i = 0, n = cur->child_num;
     while (i < n){
         trie_node* child = cur->childs[i];
         if (child->key->value == (src & cmask)){
+            query_rules += 1;
             if (child->value->action != -1 && value_match(pkt, child->value)){
                 if (child->value->priority > max_pri){
                     res = child->value;
                     max_pri = child->value->priority;
                 }
             }
-            csmask = child->snext;
-            cdmask = child->dnext;
-            if (csmask == 0 && cdmask == 0){
+            cmask = child->next;
+            if (cmask == 0){
                 break;
             }else{
                 cur = child;
@@ -637,48 +614,45 @@ int query(const struct packet* pkt){
     int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
     // stage 2
     trie_node* pre = root;
-    // pre = accelerate(pkt, &res, &max_pri);    
-    // // stage 3
-    // unsigned int cmask = pre->next, src = pkt->src;
-    // unsigned int dmask = pre->next1, dst = pkt->dst;
-    // uint32_t hash_key = ((src & cmask)^(dst & dmask)) ^ seed[pre->layer];
-    // int layer = pre->layer+1, index = slot_index(hash_key);
-    // if (pre->layer == -1) oracle_flag = 1;
-    // while (layer <= MAX_LAYER_NUM && oracle_flag == 0){
-    //     ++loops;
-    //     struct slot* cur = &Sc[layer-1][index-1];
-    //     if ((cur->used&1) == 0) { 
-    //         break;
-    //     }
-    //     if (cur->key->value == (src & cmask) && cur->value->field[0].value == (dst & dmask)){
-    //         if (cur->value->action >= 0 && value_match(pkt, cur->value)){
-    //             if (cur->value->priority > max_pri){
-    //                 max_pri = cur->value->priority;
-    //                 res = cur->value;
-    //             }
-    //         }
-    //         pre = cur->node;
-    //         cmask = cur->next;
-    //         dmask = cur->next1;
-    //         if (cmask == 0 && dmask == 0){
-    //             break;
-    //         }else{
-    //             ++layer;
-    //             if (layer <= MAX_LAYER_NUM){
-    //                 ++hash;
-    //                 hash_key = ((src & cmask)^(dst & dmask)) ^ seed[layer-1];
-    //                 index = slot_index(hash_key);
-    //             }else{
-    //                 oracle_flag = 1;
-    //             }
-    //         }
-    //     }else{
-    //         ++layer;
-    //         if (layer > MAX_LAYER_NUM) oracle_flag = 1;
-    //     }
-    // }  
+    pre = accelerate(pkt, &res, &max_pri);    
+    // stage 3
+    unsigned int cmask = pre->next, src = pkt->src;
+    uint32_t hash_key = (src & cmask) ^ seed[pre->layer];
+    int layer = pre->layer+1, index = slot_index(hash_key);
+    if (pre->layer == -1) oracle_flag = 1;
+    while (layer <= MAX_LAYER_NUM && oracle_flag == 0){
+        ++loops;
+        struct slot* cur = &Sc[layer-1][index-1];
+        if ((cur->used&1) == 0) { 
+            break;
+        }
+        if (cur->key->value == (src & cmask)){
+            if (cur->value->action >= 0 && value_match(pkt, cur->value)){
+                if (cur->value->priority > max_pri){
+                    max_pri = cur->value->priority;
+                    res = cur->value;
+                }
+            }
+            pre = cur->node;
+            cmask = cur->next;
+            if (cmask == 0){
+                break;
+            }else{
+                ++layer;
+                if (layer <= MAX_LAYER_NUM){
+                    ++hash;
+                    hash_key = (src & cmask) ^ seed[layer-1];
+                    index = slot_index(hash_key);
+                }else{
+                    oracle_flag = 1;
+                }
+            }
+        }else{
+            ++layer;
+            if (layer > MAX_LAYER_NUM) oracle_flag = 1;
+        }
+    }  
     // stage 4
-    oracle_flag = 1;
     if (oracle_flag == 1){
         ip_value* oracle_res = _oracle(pkt, pre);
         if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
@@ -802,8 +776,7 @@ void init_root(){
     root->index = 0;
     root->father = nullptr;
     root->depth = 0;
-    root->snext = 0;
-    root->dnext = 0;
+    root->next = 0;
     root->child_num = 0;
     for (int i = 0;i < MAX_CHILD_NUM;++i){
         root->childs[i] = nullptr;
@@ -822,8 +795,7 @@ void init_data_struct(){
     for (i = 0;i < MAX_LAYER_NUM;++i){
         for (j = 0;j < MAX_SLOT_NUM;++j){
             Sc[i][j].used = 0;
-            Sc[i][j].snext = 0;
-            Sc[i][j].dnext = 0;
+            Sc[i][j].next = 0;
             Sc[i][j].key = nullptr;
             Sc[i][j].value = nullptr;
             Sc[i][j].node = nullptr;
@@ -907,11 +879,11 @@ void display(trie_node* root){
     std::ofstream fout;
     fout.open("../data/trie");
     // BFS
-    int max_depth = 0, max_width = 0, max_child = 0, total_num = 0, outtable = 0, hash_conflict = 0;
+    int max_depth = 0, max_width = 0, max_child = 0, total_num = 0, outtable = 0;
     std::queue<struct trie_node*> q;
     q.push(root);
     while (!q.empty()){
-        int s = q.size();
+        int s = q.size(), depth_err = 0;
         total_num += s;
         max_width = std::max(max_width, s);
         fout << max_depth << " " << s << " " << total_num << '\n';
@@ -921,19 +893,20 @@ void display(trie_node* root){
             if (cur->layer == -1) outtable++;
             if (cur->layer >= 1){
                 fout << std::hex << cur->key->value << "/" << std::dec << countOnes(cur->key->mask) << (cur->value->action==-1 ? "V " : " ") << cur->value->id << ' ' << cur->layer << "@" << cur->index << " " << cur->depth << " " << cur->child_num << "\n";
-                if (cur->layer != cur->father->layer+1){
-                    ++hash_conflict;
-                }
+            }
+            if (cur->depth != max_depth){
+                depth_err = 1;
             }
             for (int i = 0;i < cur->child_num;++i){
                 q.push(cur->childs[i]);
             }
             max_child = std::max(max_child, cur->child_num);
         }
-        ++max_depth;
+        max_depth++;
+        fout << (depth_err==1 ? "ERR" : "ACC") << '\n';
     }
     fout.close();
-    printf("Trie: total %d, depth %d, width %d zero %d (%d %d)\n", total_num, max_depth, max_width, zero_rule_num, outtable, hash_conflict);
+    printf("Trie: total %d, depth %d, width %d zero %d (%d)\n", total_num, max_depth, max_width, zero_rule_num, outtable);
 }
 
 void print_Ec(){
@@ -1175,39 +1148,133 @@ void read_data_set(std::string rule_file, std::string packet_file){
 
 void query_packets(){
     // uniform_shaflle(packet_set, packet_num);
-
-    printf("Start query packets.\n");
     double run_time = 0;
     int i = 0, error_match = 0;
     clock_t start, end;
-    for (i = 0; i < packet_num; ++i){
-        struct packet *p = &packet_set[i];
-        start = clock();
-        int rule_id = query(p);
-        end = clock();
-        run_time += (double)(end - start) / CLOCKS_PER_SEC;
-        if (rule_id != packet_set[i].id){
-            error_match++;
-            // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
-        }   
-    }
-    printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
-    printf("loops %.2f, hash %.2f\n", loops*1.0/packet_num, hash*1.0/packet_num);
+    true_query_time = 0;
 
-    // printf("Start query packets.(only Oracle)\n");
-    // run_time = 0;
-    // i = 0, error_match = 0;
+    // printf("Start query packets.\n");
     // for (i = 0; i < packet_num; ++i){
-    //     clock_t start = clock();
-    //     int rule_id = oracle(&packet_set[i]);
-    //     clock_t end = clock();
+    //     struct packet *p = &packet_set[i];
+    //     start = clock();
+    //     int rule_id = query(p);
+    //     end = clock();
     //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
     //     if (rule_id != packet_set[i].id){
     //         error_match++;
-    //         // printf("Error match: %d %d\n", rule_id, packet_set[i].id);
-    //     }
+    //         // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
+    //     }   
     // }
     // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
+    // printf("loops %.2f, hash %.2f\n", loops*1.0/packet_num, hash*1.0/packet_num);
+
+    printf("Start query packets.(only Oracle)\n");
+    run_time = 0;
+    i = 0, error_match = 0;
+    for (i = 0; i < packet_num; ++i){
+        start = clock();
+        int rule_id = opti_trie_query(&packet_set[i]);
+        // int rule_id = query(&packet_set[i]);
+        end = clock();
+        run_time += (double)(end - start);
+        if (rule_id != packet_set[i].id){
+            error_match++;
+            // printf("%d Error match: %d (%d)\n", i, rule_id, packet_set[i].id);
+        }
+    }
+    printf("Query %d packets, %d error match, thoughout %.6f, match_thought %.6f!\n", packet_num, error_match, packet_num*1000000.0 / run_time, packet_num*1000000.0 / true_query_time);
+    printf("total_query_rules=%d(%.6f)\n", query_rules, query_rules*1.0/packet_num);
+}
+
+std::vector<struct opti_trie_node*> divideRegion(unsigned int x_start, unsigned int x_end, unsigned int y_start, unsigned int y_end, unsigned int x_per_len = 4, unsigned int y_per_len = 4) {
+    unsigned int x_length = x_end - x_start + 1;
+    unsigned int y_length = y_end - y_start + 1;
+    unsigned int x_interval = x_length / x_per_len;
+    unsigned int y_interval = y_length / y_per_len;
+    if (x_interval == 0) {
+        x_per_len = 1;
+        x_interval = x_length;
+    }
+    if (y_interval == 0) {
+        y_per_len = 1;
+        y_interval = y_length;
+    }
+    std::vector<struct opti_trie_node*> regions;
+    unsigned int x, xe, y, ye;
+    for (unsigned int i = 0; i < x_per_len; i++) {
+        for (unsigned int j = 0; j < y_per_len; j++) {
+            x = x_start + i * x_interval;
+            xe = x + x_interval - 1;
+            y = y_start + j * y_interval;
+            ye = y + y_interval - 1;
+            regions.push_back(new opti_trie_node(x, xe, y, ye));
+            if (j == y_per_len - 1 && ye < y_end) {
+                regions.push_back(new opti_trie_node(x, xe, ye + 1, y_end));
+            }
+        }
+        if (i == x_per_len - 1 && xe < x_end) {
+            for (unsigned int j = 0; j < y_per_len; j++) {
+                y = y_start + j * y_interval;
+                ye = y + y_interval - 1;
+                regions.push_back(new opti_trie_node(xe + 1, x_end, y, ye));
+                if (j == y_per_len - 1 && ye < y_end) {
+                    regions.push_back(new opti_trie_node(xe + 1, x_end, ye + 1, y_end));
+                }
+            }
+        }
+    }
+    return regions;
+}
+
+int init_opti_trie_struct(){
+    opti_root = new opti_trie_node(0, UINT32_MAX, 0, UINT32_MAX);
+    opti_root->children = {
+        new opti_trie_node(0, (1<<28)-1, 0, (1<<28)-1),
+        new opti_trie_node(0, (1<<28)-1, (1<<28), UINT32_MAX),
+        new opti_trie_node((1<<28), UINT32_MAX, 0, (1<<28)-1)
+    };
+    struct opti_trie_node* cur = opti_root;
+    std::vector<struct opti_trie_node*> cur_children = cur->children;
+    for (int i = 1;i < level_depth-2;i++){
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            std::vector<struct opti_trie_node*> regions = divideRegion(cur_child->src_start, cur_child->src_end, cur_child->dst_start, cur_child->dst_end);
+            for (int k = 0;k < regions.size();++k){
+                cur_child->children.push_back(regions[k]);
+                nxt_children.push_back(regions[k]);
+            }
+        }
+        cur_children = nxt_children;
+    }
+    opti_root->children.push_back(new opti_trie_node((1<<28), UINT32_MAX, (1<<28), UINT32_MAX));
+    cur_children = {opti_root->children[opti_root->children.size()-1]};
+    for (int i = 1;i < level_depth;i++){
+        std::vector<struct opti_trie_node*> nxt_children;
+        for (int j = 0;j < cur_children.size();++j){
+            struct opti_trie_node* cur_child = cur_children[j];
+            std::vector<struct opti_trie_node*> regions = divideRegion(cur_child->src_start, cur_child->src_end, cur_child->dst_start, cur_child->dst_end);
+            for (int k = 0;k < regions.size();++k){
+                cur_child->children.push_back(regions[k]);
+                nxt_children.push_back(regions[k]);
+            }
+        }
+        cur_children = nxt_children;
+    }
+}
+
+void delete_opti_trie(opti_trie_node* root){
+    if (root == nullptr) return;
+    for (int i = 0;i < root->children.size();++i){
+        delete_opti_trie(root->children[i]);
+    }
+    root->children.clear();
+    root->rules.clear();
+    delete root;
+}
+
+void delete_opti_trie_struct(){
+    delete_opti_trie(opti_root);
 }
 
 void insert_rule(){
