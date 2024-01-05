@@ -1,0 +1,26 @@
+==========iterate time: 2==========
+
+10772
+TCAM	Virtual: 1272	Total: 2464
+SRAM	Max_same: 136	Total: 9580
+Tree	L0: 7864   L1: 1400   L2: 278    L3: 38   
+
+21427
+TCAM	Virtual: 1661	Total: 3343
+SRAM	Max_same: 175	Total: 19745
+Tree	L0: 15527  L1: 3345   L2: 625    L3: 248  
+
+54929
+TCAM	Virtual: 1513	Total: 6315
+SRAM	Max_same: 415	Total: 50127
+Tree	L0: 39133  L1: 7947   L2: 2301   L3: 581    L4: 165  
+
+112500
+TCAM	Virtual: 4794	Total: 14413
+SRAM	Max_same: 308	Total: 102881
+Tree	L0: 82550  L1: 15268  L2: 4438   L3: 625  
+
+141242
+TCAM	Virtual: 4506	Total: 15341
+SRAM	Max_same: 359	Total: 130407
+Tree	L0: 100352  L1: 20573  L2: 7273   L3: 2209 
