@@ -131,7 +131,7 @@ def small_mask_process(tree: Node, iterate: int) -> None:
                 if free_cnt >= self_cnt+max_cnt:
                     tree.rules.extend(node.rules)
                     need_remove.append([mask, node])
-                    need_add.append(node)
+                    need_add.append(node)   
         for mask, node in need_remove:
             tree.children[mask].remove(node)
         for node in need_add:
@@ -316,7 +316,7 @@ if __name__ == "__main__":
         file = open("info.txt", "a")
         file.write(f"==========iterate time: {loop}==========\n")
         file.close()
-        for i in [10, 22, 55, 112, 141][:5]:
+        for i in [135, 182, 88, 22, 55, 112, 141][:1]:
             scale = i
             print(f"================= scaled {scale}k =================")
             init(loop)
@@ -338,13 +338,12 @@ if __name__ == "__main__":
                     print("Query trace!")
                     err, query_node, query_rule = 0, 0, 0
                     for p in pkts:
-                        pkt_id = p.strip().split()[0]
+                        pkt_id = int(p.strip().split()[0][3:])
                         pkt_bd: tuple[int,...] = tuple(map(int, p.strip().split()[1:]))
-                        pkt: PACKET_TYPE = (pkt_bd[0], pkt_bd[1], pkt_bd[2], pkt_bd[3], pkt_bd[4], pkt_bd[5])
+                        pkt: PACKET_TYPE = (pkt_bd[0], pkt_bd[1], pkt_bd[2], pkt_bd[3], pkt_bd[4], pkt_id if len(pkt_bd)<6 else pkt_bd[5])
                         match_id, q_node, q_rule = query_trace(tree, pkt)
-                        if (match_id != pkt_bd[-1]): 
+                        if (match_id != pkt[-1]): 
                             err += 1
-                            # print(p, match_id)
                         query_node += q_node
                         query_rule += q_rule
                     print(f"err: {err}, Node：{query_node/len(pkts):.2f} avg_num：{query_rule/len(pkts):.2f}")
