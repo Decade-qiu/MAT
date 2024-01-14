@@ -316,7 +316,7 @@ if __name__ == "__main__":
         file = open("info.txt", "a")
         file.write(f"==========iterate time: {loop}==========\n")
         file.close()
-        for i in [135, 182, 88, 22, 55, 112, 141][:1]:
+        for i in [202, 135, 182, 88, 22, 55, 112, 141][:1]:
             scale = i
             print(f"================= scaled {scale}k =================")
             init(loop)
@@ -332,7 +332,7 @@ if __name__ == "__main__":
                 tree = build(ip)
                 print_info(tree)
                 print("Build tree!")
-                # continue    
+                continue    
                 with open('packets_{}k'.format(scale), 'r') as file:
                     pkts = file.readlines()
                     print("Query trace!")
