@@ -316,7 +316,7 @@ if __name__ == "__main__":
         file = open("info.txt", "a")
         file.write(f"==========iterate time: {loop}==========\n")
         file.close()
-        for i in [202, 135, 182, 88, 22, 55, 112, 141][:1]:
+        for i in [295, 10,22,55,88,95,112,135,141,182,202][:1]:
             scale = i
             print(f"================= scaled {scale}k =================")
             init(loop)
