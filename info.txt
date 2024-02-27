@@ -1,6 +1,1 @@
 ==========iterate time: 2==========
-
-295275
-TCAM	Virtual: 11137	Total: 33945
-SRAM	Max_same: 351	Total: 272467
-Tree	L0: 219428  L1: 37346  L2: 13297  L3: 2272   L4: 124  
