@@ -1,0 +1,464 @@
+main_22 8500000
+main_22;[libc-2.27.so];std::__detail::_Map_base<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[] 250000
+main_22;[libstdc++.so.6.0.25] 9500000
+main_22;[libstdc++.so.6.0.25];[libstdc++.so.6.0.25];std::locale::locale 250000
+main_22;[libstdc++.so.6.0.25];[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*> 750000
+main_22;[unknown];[unknown];[libc-2.27.so];[unknown];[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*> 250000
+main_22;[unknown];[unknown];[libc-2.27.so];_int_malloc 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];cfree@GLIBC_2.2.5 3500000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];operator delete 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];operator delete@plt 750000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::_Hashtable<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::clear 15000000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::_Hashtable<trie_node*, trie_node*, std::allocator<trie_node*>, std::__detail::_Identity, std::equal_to<trie_node*>, std::hash<trie_node*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert<trie_node* const&, std::__detail::_AllocNode<std::allocator<std::__detail::_Hash_node<trie_node*, false> > > > 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::__detail::_Map_base<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[] 6000000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::__detail::_Map_base<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[] 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::_Hashtable<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::clear 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::__detail::_Map_base<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[] 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];cfree@GLIBC_2.2.5 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];__libc_malloc 2250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];operator new 1000000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];operator new@plt 500000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::_Deque_base<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::_M_initialize_map 4250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];[unknown];std::_Deque_base<trie_node*, std::allocator<trie_node*> >::_M_initialize_map 250000
+main_22;[unknown];[unknown];[unknown];[unknown];[unknown];__libc_malloc 750000
+main_22;[unknown];[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*> 7500000
+main_22;[unknown];[unknown];[unknown];std::deque<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::emplace_back<std::vector<int, std::allocator<int> > > 250000
+main_22;[unknown];[unknown];[unknown];std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::operator= 15500000
+main_22;[unknown];[unknown];__libc_malloc 500000
+main_22;[unknown];[unknown];__memcpy_avx_unaligned_erms 1750000
+main_22;[unknown];[unknown];memcpy@plt 250000
+main_22;[unknown];[unknown];operator new 250000
+main_22;[unknown];[unknown];operator new@plt 250000
+main_22;[unknown];[unknown];std::_Function_base::_Base_manager<std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false> >::_M_manager 250000
+main_22;[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > 1750000
+main_22;[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*> 250000
+main_22;[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char*> 25000000
+main_22;[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_create@plt 250000
+main_22;[unknown];[unknown];std::deque<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::emplace_back<std::vector<int, std::allocator<int> > > 250000
+main_22;[unknown];[unknown];std::function<bool  1500000
+main_22;[unknown];[unknown];std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::~vector 1000000
+main_22;[unknown];[unknown];std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::_M_default_append 250000
+main_22;[unknown];[unknown];std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::operator= 4000000
+main_22;[unknown];__cpu_indicator_init 250000
+main_22;[unknown];__cxxabiv1::__vmi_class_type_info::__do_dyncast 54250000
+main_22;[unknown];__dynamic_cast 500000
+main_22;[unknown];__errno_location 750000
+main_22;[unknown];__gnu_cxx::__stoa<long long, long long, char, int> 750000
+main_22;[unknown];__gnu_cxx::__stoa<long, int, char, int> 1000000
+main_22;[unknown];__libc_malloc 3500000
+main_22;[unknown];__libc_start_main;[unknown];__vdso_clock_gettime 250000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime 250000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64 7000000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime 1000000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;_copy_to_user 500000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;clockid_to_kclock.part.10 250000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;posix_cpu_clock_get 250000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;__get_task_for_clock 500000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group 750000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime;task_sched_runtime;__lock_text_start 2500000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;put_timespec64;copy_user_enhanced_fast_string 250000
+main_22;[unknown];__libc_start_main;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;put_timespec64;copy_user_generic_unrolled 250000
+main_22;[unknown];__libc_start_main;__libc_malloc 734500000
+main_22;[unknown];__libc_start_main;__libc_malloc;apic_timer_interrupt;smp_apic_timer_interrupt;irq_exit;__softirqentry_text_start;run_timer_softirq;call_timer_fn;tcp_delack_timer;tcp_delack_timer_handler;tcp_send_ack;__tcp_send_ack.part.45;__tcp_transmit_skb;ip_queue_xmit;__ip_queue_xmit;ip_local_out;ip_output;ip_finish_output;__ip_finish_output;ip_finish_output2;dev_queue_xmit;__dev_queue_xmit;sch_direct_xmit;dev_hard_start_xmit;e1000_xmit_frame 250000
+main_22;[unknown];__libc_start_main;__memcpy_avx_unaligned_erms 168500000
+main_22;[unknown];__libc_start_main;__memset_avx2_erms;page_fault;do_page_fault;__do_page_fault 250000
+main_22;[unknown];__libc_start_main;cfree@GLIBC_2.2.5 707500000
+main_22;[unknown];__libc_start_main;clock 750000
+main_22;[unknown];__libc_start_main;clock_gettime 750000
+main_22;[unknown];__libc_start_main;free@plt 69750000
+main_22;[unknown];__libc_start_main;main 9819000000
+main_22;[unknown];__libc_start_main;main;__gnu_cxx::__stoa<long long, long long, char, int> 500000
+main_22;[unknown];__libc_start_main;main;__gnu_cxx::__stoa<long, int, char, int> 500000
+main_22;[unknown];__libc_start_main;main;__libc_malloc 500000
+main_22;[unknown];__libc_start_main;main;__strlen_avx2 500000
+main_22;[unknown];__libc_start_main;main;cfree@GLIBC_2.2.5 500000
+main_22;[unknown];__libc_start_main;main;clock 2250000
+main_22;[unknown];__libc_start_main;main;free@plt 250000
+main_22;[unknown];__libc_start_main;main;malloc@plt 500000
+main_22;[unknown];__libc_start_main;main;memmove@plt 250000
+main_22;[unknown];__libc_start_main;main;operator delete 500000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault 6500000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault 750000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault 1750000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;_raw_spin_lock 750000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask 1000000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist 1000000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 5750000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;lru_cache_add_active_or_unevictable;__lru_cache_add;pagevec_lru_move_fn;__lock_text_start 500000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_commit_charge 500000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_throttle_swaprate 750000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_try_charge;get_mem_cgroup_from_mm 250000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;page_add_new_anon_rmap;__page_set_anon_rmap 250000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;pmd_page_vaddr 250000
+main_22;[unknown];__libc_start_main;main;page_fault;do_page_fault;__do_page_fault;mem_cgroup_from_task 250000
+main_22;[unknown];__libc_start_main;main;query_packets 600000000
+main_22;[unknown];__libc_start_main;main;read_data_set 2500000
+main_22;[unknown];__libc_start_main;main;read_data_set;__dynamic_cast 2000000
+main_22;[unknown];__libc_start_main;main;read_data_set;__libc_malloc 2500000
+main_22;[unknown];__libc_start_main;main;read_data_set;cfree@GLIBC_2.2.5 2750000
+main_22;[unknown];__libc_start_main;main;read_data_set;malloc@plt 500000
+main_22;[unknown];__libc_start_main;main;read_data_set;operator delete@plt 1000000
+main_22;[unknown];__libc_start_main;main;read_data_set;operator new 1250000
+main_22;[unknown];__libc_start_main;main;read_data_set;operator new@plt 1000000
+main_22;[unknown];__libc_start_main;main;read_data_set;page_fault;do_page_fault;__do_page_fault 1000000
+main_22;[unknown];__libc_start_main;main;read_data_set;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_throttle_swaprate 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;lru_cache_add_active_or_unevictable 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;page_fault;do_page_fault;__do_page_fault;vmacache_find 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split 29500000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;__libc_malloc 500000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;cfree@GLIBC_2.2.5 1250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;free@plt 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;operator delete 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;operator new 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__cxx11::regex_iterator<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, char, std::__cxx11::regex_traits<char> >::operator== 500000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 500000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>,  17250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 20500000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::_Function_handler<bool  3750000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 22500000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 6000000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 3250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 1000000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::operator= 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::__detail::__regex_algo_impl<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, char, std::__cxx11::regex_traits<char>, ;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_rep_once_more 750000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::_M_default_append 500000
+main_22;[unknown];__libc_start_main;main;read_data_set;split;std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::operator= 3500000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >,  1500000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_assign@plt 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > 750000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char*> 500000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::__cxx11::regex_token_iterator<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, char, std::__cxx11::regex_traits<char> >::operator= 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction 2000000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::locale::_Impl::_Impl 750000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::locale::locale 3250000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::locale::locale@plt 750000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::locale::operator= 1250000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::locale::~locale 2250000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::use_facet<std::ctype<char> > 1000000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector 250000
+main_22;[unknown];__libc_start_main;main;read_data_set;std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > >::emplace_back<std::__detail::_State<char> > 500000
+main_22;[unknown];__libc_start_main;main;slot_index 2000000
+main_22;[unknown];__libc_start_main;main;split 250000
+main_22;[unknown];__libc_start_main;main;std::_Hashtable<trie_node*, trie_node*, std::allocator<trie_node*>, std::__detail::_Identity, std::equal_to<trie_node*>, std::hash<trie_node*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert<trie_node* const&, std::__detail::_AllocNode<std::allocator<std::__detail::_Hash_node<trie_node*, false> > > > 500000
+main_22;[unknown];__libc_start_main;main;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char*> 500000
+main_22;[unknown];__libc_start_main;main;std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::_M_destroy_data_aux 250000
+main_22;[unknown];__libc_start_main;main;std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::emplace_back<std::vector<trie_node*, std::allocator<trie_node*> > > 500000
+main_22;[unknown];__libc_start_main;main;std::getline<char, std::char_traits<char>, std::allocator<char> > 500000
+main_22;[unknown];__libc_start_main;main;std::istream::sentry::sentry 250000
+main_22;[unknown];__libc_start_main;main;value_match 21500000
+main_22;[unknown];__libc_start_main;main;write_acc 11500000
+main_22;[unknown];__libc_start_main;main;write_node 58000000
+main_22;[unknown];__libc_start_main;malloc@plt 204250000
+main_22;[unknown];__libc_start_main;memmove@plt 106500000
+main_22;[unknown];__libc_start_main;operator delete 8750000
+main_22;[unknown];__libc_start_main;operator delete@plt 226250000
+main_22;[unknown];__libc_start_main;operator new 304000000
+main_22;[unknown];__libc_start_main;operator new@plt 221250000
+main_22;[unknown];__libc_start_main;slot_index 9500000
+main_22;[unknown];__libc_start_main;std::_Deque_base<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::_M_initialize_map 1000000
+main_22;[unknown];__libc_start_main;std::_Deque_base<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::~_Deque_base 3250000
+main_22;[unknown];__libc_start_main;std::_Deque_base<trie_node*, std::allocator<trie_node*> >::~_Deque_base 750000
+main_22;[unknown];__libc_start_main;std::_Hashtable<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_find_before_node 109000000
+main_22;[unknown];__libc_start_main;std::_Hashtable<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::find 26750000
+main_22;[unknown];__libc_start_main;std::_Hashtable<trie_node*, trie_node*, std::allocator<trie_node*>, std::__detail::_Identity, std::equal_to<trie_node*>, std::hash<trie_node*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert<trie_node* const&, std::__detail::_AllocNode<std::allocator<std::__detail::_Hash_node<trie_node*, false> > > > 718750000
+main_22;[unknown];__libc_start_main;std::__detail::_Map_base<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[] 10750000
+main_22;[unknown];__libc_start_main;std::__insertion_sort<__gnu_cxx::__normal_iterator<trie_node**, std::vector<trie_node*, std::allocator<trie_node*> > >, __gnu_cxx::__ops::_Iter_comp_iter<dynamic_adjust2 500000
+main_22;[unknown];__libc_start_main;std::deque<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >::emplace_back<std::vector<int, std::allocator<int> > > 6250000
+main_22;[unknown];__libc_start_main;std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::_M_destroy_data_aux 5000000
+main_22;[unknown];__libc_start_main;std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::_M_pop_front_aux 22750000
+main_22;[unknown];__libc_start_main;std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::emplace_back<std::vector<trie_node*, std::allocator<trie_node*> > > 623750000
+main_22;[unknown];__libc_start_main;time;page_fault;do_page_fault;down_read_trylock 250000
+main_22;[unknown];__libc_start_main;write_acc 2500000
+main_22;[unknown];__libc_start_main;write_node 250000
+main_22;[unknown];__memset_avx2_erms 1750000
+main_22;[unknown];__memset_avx2_erms;page_fault;do_page_fault;__do_page_fault 1250000
+main_22;[unknown];__memset_avx2_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;_raw_spin_lock 1250000
+main_22;[unknown];__memset_avx2_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page 250000
+main_22;[unknown];__memset_avx2_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 250000
+main_22;[unknown];__memset_avx2_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_try_charge;try_charge 250000
+main_22;[unknown];__memset_avx2_unaligned_erms 250000
+main_22;[unknown];__strcmp_sse2_unaligned 14250000
+main_22;[unknown];__vdso_clock_gettime 250000
+main_22;[unknown];__write;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_write;ksys_write;vfs_write;__vfs_write;tty_write;n_tty_write;pty_write;tty_insert_flip_string_and_push_buffer;queue_work_on 250000
+main_22;[unknown];cfree@GLIBC_2.2.5 1250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime 42250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;__x64_sys_clock_gettime 1250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64 36000000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime 750000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;_copy_to_user 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;clockid_to_kclock.part.10 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;posix_cpu_clock_get 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;__get_task_for_clock 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get 500000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;__get_task_for_clock 1000000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime 1000000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime;__lock_text_start 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime;task_rq_lock 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime;task_sched_runtime 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime;task_sched_runtime;__lock_text_start 11250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime;task_sched_runtime;_raw_spin_lock_irqsave 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;process_cpu_clock_get;posix_cpu_clock_get;cpu_clock_sample_group;thread_group_cputime;task_sched_runtime;task_rq_lock;_raw_spin_lock_irqsave 750000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;put_timespec64;copy_user_enhanced_fast_string 500000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_clock_gettime;put_timespec64;copy_user_generic_unrolled 2500000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x86_indirect_thunk_rax 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;process_cpu_clock_get 250000
+main_22;[unknown];clock_gettime;__vdso_clock_gettime;entry_SYSCALL_64_after_hwframe;do_syscall_64;put_timespec64 250000
+main_22;[unknown];do_lookup_x 250000
+main_22;[unknown];malloc@plt 250000
+main_22;[unknown];malloc_consolidate 42250000
+main_22;[unknown];operator new 3000000
+main_22;[unknown];operator new@plt 1750000
+main_22;[unknown];std::_Deque_base<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::_M_initialize_map 3250000
+main_22;[unknown];std::_Deque_base<trie_node*, std::allocator<trie_node*> >::_M_initialize_map 500000
+main_22;[unknown];std::_Function_base::_Base_manager<std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false> >::_M_manager 1750000
+main_22;[unknown];std::_Function_base::_Base_manager<std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, false, false> >::_M_manager 250000
+main_22;[unknown];std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, ;[unknown];cfree@GLIBC_2.2.5 1500000
+main_22;[unknown];std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, ;[unknown];std::_Function_base::_Base_manager<std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false> >::_M_manager 250000
+main_22;[unknown];std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, ;[unknown];std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >,  1000000
+main_22;[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*> 4750000
+main_22;[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>@plt 5500000
+main_22;[unknown];std::__cxx11::collate<char>::do_transform 21000000
+main_22;[unknown];std::__cxx11::collate<char>::~collate;[unknown];[unknown];[unknown];std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*> 11250000
+main_22;[unknown];std::__cxx11::collate<char>::~collate;[unknown];__cxxabiv1::__si_class_type_info::__do_dyncast 16000000
+main_22;[unknown];std::__cxx11::regex_token_iterator<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, char, std::__cxx11::regex_traits<char> >::operator= 750000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_assign 250000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply 18750000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_alternative 39000000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_alternative;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_alternative 500000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_alternative;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_match_token 1500000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_alternative;std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_dummy 1000000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_match_token 1000000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_pop 250000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_matcher 1250000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_repeat 250000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::__detail::_Scanner<char>::_M_advance 500000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::deque<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> > > >::push_back 500000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::vector<char, std::allocator<char> >::_M_erase 250000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::~vector 500000
+main_22;[unknown];std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction;std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > >::emplace_back<std::__detail::_State<char> > 250000
+main_22;[unknown];std::__detail::_Map_base<int, std::pair<int const, int>, std::allocator<std::pair<int const, int> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[] 27500000
+main_22;[unknown];std::__detail::_Map_base<unsigned int, std::pair<unsigned int const, std::vector<trie_node*, std::allocator<trie_node*> > >, std::allocator<std::pair<unsigned int const, std::vector<trie_node*, std::allocator<trie_node*> > > >, std::__detail::_Select1st, std::equal_to<unsigned int>, std::hash<unsigned int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[] 500000
+main_22;[unknown];std::__detail::_Prime_rehash_policy::_M_need_rehash 1250000
+main_22;[unknown];std::__detail::_Prime_rehash_policy::_M_need_rehash@plt 750000
+main_22;[unknown];std::__detail::_Prime_rehash_policy::_M_next_bkt 500000
+main_22;[unknown];std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::emplace_back<std::vector<trie_node*, std::allocator<trie_node*> > > 16000000
+main_22;[unknown];std::function<bool  250000
+main_22;[unknown];std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator 250000
+main_22;[unknown];std::use_facet<std::ctype<char> > 500000
+main_22;[unknown];std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::~vector 250000
+main_22;[unknown];std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::_M_default_append 750000
+main_22;[unknown];std::vector<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >::operator= 4500000
+main_22;[unknown];std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > >::emplace_back<std::__detail::_State<char> > 1000000
+main_22;[unknown];std::vector<trie_node*, std::allocator<trie_node*> >::_M_realloc_insert<trie_node* const&> 500000
+main_22;[unknown];std::vector<trie_node*, std::allocator<trie_node*> >::_M_realloc_insert<trie_node* const&>;page_fault;do_page_fault;__do_page_fault 1000000
+main_22;[unknown];std::vector<trie_node*, std::allocator<trie_node*> >::_M_realloc_insert<trie_node* const&>;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;_raw_spin_lock 500000
+main_22;[unknown];std::vector<trie_node*, std::allocator<trie_node*> >::_M_realloc_insert<trie_node* const&>;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 500000
+main_22;[unknown];std::vector<trie_node*, std::allocator<trie_node*> >::_M_realloc_insert<trie_node* const&>;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;lru_cache_add_active_or_unevictable;__lru_cache_add;pagevec_lru_move_fn;__lock_text_start 500000
+main_22;[unknown];strcmp@plt 24000000
+main_22;[unknown];strtol 500000
+main_22;[unknown];uniform_shaflle<ip_rule> 250000
+main_22;__GI_____strtol_l_internal 7250000
+main_22;__cxxabiv1::__si_class_type_info::__do_dyncast 16000000
+main_22;__cxxabiv1::__vmi_class_type_info::__do_dyncast 55500000
+main_22;__dynamic_cast 182250000
+main_22;__dynamic_cast@plt 5250000
+main_22;__libc_malloc 1024500000
+main_22;__memchr_avx2 1000000
+main_22;__memcmp_avx2_movbe 250000
+main_22;__memcpy_avx_unaligned_erms 250000
+main_22;__memset_avx2_erms 1250000
+main_22;__sbrk 250000
+main_22;__strchr_avx2 1000000
+main_22;__strlen_avx2 42000000
+main_22;__strxfrm_l@plt 4750000
+main_22;_dl_map_object;_dl_setup_hash;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault 250000
+main_22;_int_malloc 55250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault 8000000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;_cond_resched;rcu_all_qs 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault 1000000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault 1500000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;_raw_spin_lock 1250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask 500000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist 2000000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 3500000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;kernel_init_free_pages 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;lru_cache_add_active_or_unevictable;__lru_cache_add 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;lru_cache_add_active_or_unevictable;__lru_cache_add;pagevec_lru_move_fn;__lock_text_start 750000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_commit_charge 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;kthread_blkcg 500000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_throttle_swaprate 1500000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_try_charge;get_mem_cgroup_from_mm 750000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_try_charge;try_charge 500000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;pmd_devmap_trans_unstable 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__pte_alloc 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;mem_cgroup_commit_charge 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;pmd_page_vaddr 250000
+main_22;_int_malloc;page_fault;do_page_fault;__do_page_fault;up_read 250000
+main_22;_int_malloc;page_fault;do_page_fault;_cond_resched 250000
+main_22;brk 750000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64 750000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk 500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__split_vma 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__split_vma;__vma_adjust 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__split_vma;__vma_adjust;anon_vma_interval_tree_insert 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__split_vma;__vma_link_list 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__split_vma;anon_vma_clone;kmem_cache_alloc 750000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__split_vma;vm_area_dup;kmem_cache_alloc;memcg_kmem_get_cache 1500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__split_vma;vm_area_dup;should_failslab 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;__vma_adjust 500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;percpu_counter_add_batch 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;free_pgtables;native_set_pmd 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;lru_add_drain;lru_add_drain_cpu;pagevec_lru_move_fn 1000000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;lru_add_drain;lru_add_drain_cpu;pagevec_lru_move_fn;__lock_text_start 500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;lru_add_drain_cpu 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;tlb_finish_mmu;free_pages;free_pages.part.101;free_unref_page 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;tlb_finish_mmu;tlb_flush_mmu;flush_tlb_mm_range 500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;tlb_finish_mmu;tlb_flush_mmu;flush_tlb_mm_range;cpumask_any_but 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;tlb_finish_mmu;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;__lock_text_start 750000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;tlb_finish_mmu;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;free_unref_page_list;free_pcp_prepare 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;tlb_finish_mmu;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;mem_cgroup_uncharge_list;uncharge_batch 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;unmap_vmas;unmap_single_vma;unmap_page_range 500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;unmap_vmas;unmap_single_vma;unmap_page_range;_raw_spin_lock 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;__do_munmap;unmap_region;unmap_vmas;unmap_single_vma;unmap_page_range;page_remove_rmap 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;arch_get_unmapped_area_topdown 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;get_unmapped_area;security_mmap_addr 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;perf_event_mmap;perf_iterate_sb 750000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;perf_event_mmap;perf_iterate_sb;perf_event_mmap_output 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;perf_event_mmap;perf_iterate_sb;perf_iterate_ctx 500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;security_vm_enough_memory_mm;cap_vm_enough_memory;cap_capable 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;vma_merge;__vma_adjust 1500000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;do_brk_flags;vma_merge;hugepage_vma_check 250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_brk;find_vma 1250000
+main_22;brk;entry_SYSCALL_64_after_hwframe;do_syscall_64;down_write_killable 500000
+main_22;cfree@GLIBC_2.2.5 2048750000
+main_22;data;[unknown];[unknown];[unknown];std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::emplace_back<std::vector<trie_node*, std::allocator<trie_node*> > > 11250000
+main_22;data;[unknown];[unknown];__libc_malloc 16750000
+main_22;data;[unknown];[unknown];__memcpy_avx_unaligned_erms 5000000
+main_22;data;[unknown];[unknown];malloc@plt 5000000
+main_22;data;[unknown];[unknown];memmove@plt 500000
+main_22;data;[unknown];[unknown];operator new 10500000
+main_22;data;[unknown];[unknown];operator new@plt 4750000
+main_22;data;[unknown];[unknown];std::deque<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::emplace_back<std::vector<trie_node*, std::allocator<trie_node*> > > 38000000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms 2750000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault 2000000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault 250000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;_raw_spin_lock 750000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist 250000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 250000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;get_vma_policy.part.38 250000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_commit_charge 250000
+main_22;data;[unknown];__memcpy_avx_unaligned_erms;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_try_charge;try_charge 250000
+main_22;data;[unknown];operator delete 250000
+main_22;data;[unknown];std::__introsort_loop<__gnu_cxx::__normal_iterator<trie_node**, std::vector<trie_node*, std::allocator<trie_node*> > >, long, __gnu_cxx::__ops::_Iter_comp_iter<dynamic_adjust2 194500000
+main_22;data;[unknown];std::vector<trie_node*, std::allocator<trie_node*> >::_M_realloc_insert<trie_node* const&> 500000
+main_22;data;[unknown];std::vector<trie_node*, std::allocator<trie_node*> >::_M_realloc_insert<trie_node* const&>;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 250000
+main_22;data;std::deque<trie_node*, std::allocator<trie_node*> >::_M_push_back_aux<trie_node* const&> 1250000
+main_22;do_lookup_x 250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;tlb_finish_mmu;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;__lock_text_start 250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range 1250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;page_remove_rmap 750000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;page_remove_rmap;__dec_node_state 250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;tlb_flush_mmu;free_pages_and_swap_cache 250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;__lock_text_start 250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;free_unref_page_list 500000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;free_unref_page_list;free_pcp_prepare 250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;free_unref_page_list;free_unref_page_prepare.part.72 250000
+main_22;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_exit_group;do_group_exit;do_exit;mmput;exit_mmap;unmap_vmas;unmap_single_vma;unmap_page_range;tlb_flush_mmu;free_pages_and_swap_cache;release_pages;free_unref_page_prepare.part.72 250000
+main_22;free@plt 8500000
+main_22;get_common_indeces.constprop.1 250000
+main_22;insert_path 1000000
+main_22;insert_path;write_acc 15750000
+main_22;intel_check_word.isra.0 250000
+main_22;malloc@plt 5000000
+main_22;operator delete 2500000
+main_22;operator delete@plt 3750000
+main_22;operator new 22000000
+main_22;operator new@plt 2500000
+main_22;operator new[] 250000
+main_22;read 500000
+main_22;read;entry_SYSCALL_64_after_hwframe;do_syscall_64 250000
+main_22;read;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_read;ksys_read;__fdget_pos;__fget_light 250000
+main_22;read;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_read;ksys_read;vfs_read;__vfs_read;new_sync_read;ext4_file_read_iter;generic_file_read_iter;copy_page_to_iter;copy_user_enhanced_fast_string 750000
+main_22;read;entry_SYSCALL_64_after_hwframe;do_syscall_64;__x64_sys_read;ksys_read;vfs_read;rw_verify_area;security_file_permission;__fsnotify_parent;lockref_get_not_zero 250000
+main_22;std::_Deque_base<std::vector<trie_node*, std::allocator<trie_node*> >, std::allocator<std::vector<trie_node*, std::allocator<trie_node*> > > >::~_Deque_base 3000000
+main_22;std::_Deque_base<trie_node*, std::allocator<trie_node*> >::~_Deque_base 250000
+main_22;std::_Hashtable<trie_node*, trie_node*, std::allocator<trie_node*>, std::__detail::_Identity, std::equal_to<trie_node*>, std::hash<trie_node*>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert<trie_node* const&, std::__detail::_AllocNode<std::allocator<std::__detail::_Hash_node<trie_node*, false> > > > 6222750000
+main_22;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_append 57750000
+main_22;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_append@plt 6750000
+main_22;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_assign 500000
+main_22;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_replace_aux@plt 250000
+main_22;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::compare 500000
+main_22;std::__cxx11::collate<char>::_M_transform 1500000
+main_22;std::__cxx11::collate<char>::_M_transform@plt 6250000
+main_22;std::__cxx11::collate<char>::do_transform 38500000
+main_22;std::__cxx11::collate<char>::do_transform;@plt 15750000
+main_22;std::__cxx11::collate<char>::do_transform;__stpncpy_sse2_unaligned 39250000
+main_22;std::__cxx11::collate<char>::do_transform;__strlen_avx2 42750000
+main_22;std::__cxx11::collate<char>::do_transform;strxfrm_l 53750000
+main_22;std::__cxx11::regex_iterator<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, char, std::__cxx11::regex_traits<char> >::operator== 500000
+main_22;std::__cxx11::regex_token_iterator<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, char, std::__cxx11::regex_traits<char> >::operator= 250000
+main_22;std::__cxx11::regex_token_iterator<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, char, std::__cxx11::regex_traits<char> >::operator=;std::__cxx11::regex_iterator<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, char, std::__cxx11::regex_traits<char> >::operator== 500000
+main_22;std::__cxx11::regex_traits<char>::isctype 20750000
+main_22;std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply 41750000
+main_22;std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_match_token 250000
+main_22;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 500000
+main_22;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_rep_once_more 250000
+main_22;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_rep_once_more;std::_Function_handler<bool  250000
+main_22;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_rep_once_more;std::__detail::_Executor<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::__cxx11::sub_match<__gnu_cxx::__normal_iterator<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::__cxx11::regex_traits<char>, true>::_M_dfs 3500000
+main_22;std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_subexpr_begin 500000
+main_22;std::__detail::_Scanner<char>::_M_advance 250000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];__strlen_avx2 750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__cxx11::regex_traits<char>::transform_primary<char const*> 5500000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply 22750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;__dynamic_cast 222750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;__dynamic_cast@plt 12000000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;__libc_malloc 11750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;__memcpy_avx_unaligned_erms 11250000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;cfree@GLIBC_2.2.5 38750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;free@plt 6750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;malloc@plt 4750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;memcpy@plt 3250000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;operator delete@plt 6750000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;operator new 16500000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;operator new@plt 5250000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char*> 6250000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::__cxx11::collate<char>::do_transform 12000000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::__cxx11::regex_traits<char>::transform_primary<char const*> 77000000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::ctype<char>::do_tolower 41500000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::locale::id::_M_id 41000000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::locale::id::_M_id@plt 10000000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::use_facet<std::__cxx11::collate<char> > 37500000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::use_facet<std::__cxx11::collate<char> >@plt 5000000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::use_facet<std::ctype<char> > 19000000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply;std::use_facet<std::ctype<char> >@plt 5250000
+main_22;std::__detail::_Scanner<char>::_M_advance;[unknown];std::__find_if<__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, __gnu_cxx::__ops::_Iter_equals_val<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const> > 15000000
+main_22;std::__detail::_Scanner<char>::_M_advance;std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_M_apply 1750000
+main_22;std::__detail::_Scanner<char>::_M_eat_escape_ecma 250000
+main_22;std::__find_if<__gnu_cxx::__normal_iterator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const*, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, __gnu_cxx::__ops::_Iter_equals_val<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const> > 19500000
+main_22;std::basic_filebuf<char, std::char_traits<char> >::underflow 250000
+main_22;std::binary_search<__gnu_cxx::__normal_iterator<char const*, std::vector<char, std::allocator<char> > >, char> 7500000
+main_22;std::getline<char, std::char_traits<char>, std::allocator<char> > 500000
+main_22;std::locale::id::_M_id 9000000
+main_22;std::locale::id::_M_id@plt 5500000
+main_22;std::use_facet<std::ctype<char> > 47750000
+main_22;std::use_facet<std::ctype<char> >@plt 13250000
+main_22;std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > >::emplace_back<std::__detail::_State<char> > 1500000
+main_22;strchr@plt 250000
+main_22;strlen@plt 5750000
+main_22;strxfrm_l 1000000
+main_22;sysmalloc;error_exit 250000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault 750000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault 250000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;__pte_alloc;pte_alloc_one;policy_node 250000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;alloc_pages_vma;__alloc_pages_nodemask;get_page_from_freelist;prep_new_page;clear_page_erms 250000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;get_vma_policy.part.38 250000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;__handle_mm_fault;mem_cgroup_try_charge_delay;mem_cgroup_throttle_swaprate 500000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault;handle_mm_fault;mem_cgroup_try_charge_delay 250000
+main_22;sysmalloc;page_fault;do_page_fault;__do_page_fault;up_read 250000
+main_22;systrim.isra.1.constprop.11 250000
+main_22;write_acc 5750000

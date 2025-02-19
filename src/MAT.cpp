@@ -14,12 +14,14 @@
 #include <random>
 #include <cstddef>
 #include <iomanip>
+#include <chrono>
+
 #include "MAT.h"
 // #include "../utils/murmurhash.h"
 
 // #define SEED 171
 #define MAX_ZERO_RULE_NUM 512
-#define MAX_LAYER_NUM 128
+#define MAX_LAYER_NUM 32
 #define MAX_SLOT_NUM (1 << 13)
 #define QUICK_FIND_BIT 12
 #define QUICK_FIND_MAX_NUM (1 << QUICK_FIND_BIT)
@@ -610,7 +612,7 @@ int query(const struct packet* pkt){
     int oracle_flag = 0; 
     // stage 1
     ip_value* res = nullptr; 
-    res = zero_rule_query(pkt);
+    // res = zero_rule_query(pkt);
     int max_pri = (res == nullptr ? MIN_PRIORITY : res->priority);
     // stage 2
     trie_node* pre = root;
@@ -627,7 +629,8 @@ int query(const struct packet* pkt){
             break;
         }
         if (cur->key->value == (src & cmask)){
-            if (cur->value->action >= 0 && value_match(pkt, cur->value)){
+            // if (cur->value->action >= 0 && value_match(pkt, cur->value)){
+            if (cur->value->action >= 0){
                 if (cur->value->priority > max_pri){
                     max_pri = cur->value->priority;
                     res = cur->value;
@@ -653,10 +656,10 @@ int query(const struct packet* pkt){
         }
     }  
     // stage 4
-    if (oracle_flag == 1){
-        ip_value* oracle_res = _oracle(pkt, pre);
-        if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
-    }
+    // if (oracle_flag == 1){
+    //     ip_value* oracle_res = _oracle(pkt, pre);
+    //     if (oracle_res!=nullptr && oracle_res->priority > max_pri) res = oracle_res;
+    // }
     return res == nullptr ? 0 : res->id;
 }
 
@@ -701,6 +704,7 @@ int opti_trie_insert(struct ip_rule* rule){
         struct opti_trie_node* cur_child = cur_children[i];
         cur_child->rules.push_back(rule);
     }
+    return 0;
 }
 
 int opti_trie_query(const struct packet* pkt){
@@ -1009,8 +1013,8 @@ void display_longest_path(int scale){
 }
 
 void print_info(int scale){
-    display_longest_path(scale);
-    display(root);
+    // display_longest_path(scale);
+    // display(root);
     // print_acc();
     // print_Ec();
     // print_Sc();
@@ -1149,41 +1153,52 @@ void read_data_set(std::string rule_file, std::string packet_file){
 void query_packets(){
     // uniform_shaflle(packet_set, packet_num);
     double run_time = 0;
-    int i = 0, error_match = 0;
-    clock_t start, end;
+    int i = 0, j = 0, error_match = 0;
+    // clock_t start, end;
     true_query_time = 0;
 
-    // printf("Start query packets.\n");
+    printf("Start query packets.\n");
     // for (i = 0; i < packet_num; ++i){
-    //     struct packet *p = &packet_set[i];
+    uint32_t test_packet_num = packet_num;
+    // start = clock();
+    auto start = std::chrono::high_resolution_clock::now();
+    for (j = 0; j < test_packet_num; ++j){
+        i = j % packet_num;
+        struct packet *p = &packet_set[i];
+        int rule_id = query(p);
+        // int rule_id = 1;
+        // if (rule_id != packet_set[i].id){
+        //     error_match++;
+        //     // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
+        // }   
+    }
+    // end = clock();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end - start;
+    // run_time += (double)(end - start);
+    run_time = elapsed_time.count();
+    printf("run_time: %f\n", run_time);
+    printf("Query %d packets, %d error match, thoughout %.6f!\n", test_packet_num, error_match, test_packet_num * 1.0 / run_time);
+    printf("loops %.2f, hash %.2f\n", loops*1.0/test_packet_num, hash*1.0/test_packet_num);
+    printf("Zc : %d\n", zero_rule_num);
+    printf("total_query_rules=%d(%.6f)\n", query_rules, query_rules*1.0/test_packet_num);
+
+    // printf("Start query packets.(only Oracle)\n");
+    // run_time = 0;
+    // i = 0, error_match = 0;
+    // for (i = 0; i < packet_num; ++i){
     //     start = clock();
-    //     int rule_id = query(p);
+    //     // int rule_id = opti_trie_query(&packet_set[i]);
+    //     int rule_id = query(&packet_set[i]);
     //     end = clock();
     //     run_time += (double)(end - start) / CLOCKS_PER_SEC;
     //     if (rule_id != packet_set[i].id){
     //         error_match++;
-    //         // printf("Error match:%d %d %d\n", i+1, rule_id, packet_set[i].id);
-    //     }   
+    //         // printf("%d Error match: %d (%d)\n", i, rule_id, packet_set[i].id);
+    //     }
     // }
-    // printf("Query %d packets, %d error match, thoughout %.6f!\n", packet_num, error_match, packet_num / run_time);
-    // printf("loops %.2f, hash %.2f\n", loops*1.0/packet_num, hash*1.0/packet_num);
-
-    printf("Start query packets.(only Oracle)\n");
-    run_time = 0;
-    i = 0, error_match = 0;
-    for (i = 0; i < packet_num; ++i){
-        start = clock();
-        int rule_id = opti_trie_query(&packet_set[i]);
-        // int rule_id = query(&packet_set[i]);
-        end = clock();
-        run_time += (double)(end - start);
-        if (rule_id != packet_set[i].id){
-            error_match++;
-            // printf("%d Error match: %d (%d)\n", i, rule_id, packet_set[i].id);
-        }
-    }
-    printf("Query %d packets, %d error match, thoughout %.6f, match_thought %.6f!\n", packet_num, error_match, packet_num*1000000.0 / run_time, packet_num*1000000.0 / true_query_time);
-    printf("total_query_rules=%d(%.6f)\n", query_rules, query_rules*1.0/packet_num);
+    // printf("Query %d packets, %d error match, thoughout %.6f, match_thought %.6f!\n", packet_num, error_match, packet_num / run_time, packet_num*1000000.0 / true_query_time);
+    // printf("total_query_rules=%d(%.6f)\n", query_rules, query_rules*1.0/packet_num);
 }
 
 std::vector<struct opti_trie_node*> divideRegion(unsigned int x_start, unsigned int x_end, unsigned int y_start, unsigned int y_end, unsigned int x_per_len = 4, unsigned int y_per_len = 4) {
@@ -1279,14 +1294,14 @@ void delete_opti_trie_struct(){
 
 void insert_rule(){
     uniform_shaflle(rule_set, rule_num);
-    init_opti_trie_struct();
+    // init_opti_trie_struct();
     double run_time = 0;
     int i = 0, sucess_count = 0; 
     printf("Start insert rules.\n");
     for (i = 0; i < rule_num; ++i){
         clock_t start = clock();
-        // int st = insert(&rule_set[i]);
-        int st = opti_trie_insert(&rule_set[i]);
+        int st = insert(&rule_set[i]);
+        // int st = opti_trie_insert(&rule_set[i]);
         clock_t end = clock();
         run_time += (double)(end - start) / CLOCKS_PER_SEC;
         if (st == 0) sucess_count++; 

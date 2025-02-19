@@ -1,10 +1,8 @@
 # MAT
 MAT match-action run
 ```
-cd build
-cmake ..
-make
-./MAT
+g++ ./src/MAT.cpp ./main.cpp -o main_222 --std=c++11 -mavx2 -O3 -march=native -funroll-all-loops -flto; 
+./main_222.exe;
 ```
 Performance Test
 ```
